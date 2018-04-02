@@ -1,4 +1,4 @@
-#	Makefile	(2.11BSD)	2.3	1997/8/11
+#	Makefile	(2.11BSD)	2.4	2000/11/13
 #
 #	The limitations on program size have been removed.  The addition
 #	of disklabel support pushed 'restor' over the limit.  Even with
@@ -13,6 +13,8 @@
 #	It is still possible to hand craft a version of the utilities by leaving
 #	out all but the necessary drivers. 
 #
+# 2000/11/13 - use libkern instead of libc because the libc routines use 
+#	       floating point which may not exist.
 # 1997/8/11  - add -O to maketape and makesimtape compile commands
 # 1997/1/24  - remove 'skel' from lists of directories.
 # 1997/1/18  - add 'makesimtape' target.
@@ -53,6 +55,9 @@ all: ${ALL}
 
 .s.o:
 	/lib/cpp -P ${DEFS} $< | as -u -V -o $@
+
+csv.o:	FRC
+	ar xv /lib/libc.a csv.o
 
 srt0-i.o: srt0.s
 	/lib/cpp -P -DSPLIT_ID ${DEFS} srt0.s | as -u -V -o $@
@@ -124,20 +129,20 @@ mtboot: mtboot.o
 	dd if=$@.o of=mtboot bs=16 skip=1
 	rm -f $@.o
 
-boot: M.o conf.o boot.o ubmapset.o libsa.a
-	ld -X -o $@ M.o conf.o boot.o ubmapset.o libsa.a -lc
+boot: M.o conf.o boot.o ubmapset.o libsa.a csv.o
+	ld -X -o $@ M.o conf.o boot.o ubmapset.o libsa.a -lkern csv.o
 
-mkfs: srt0.o conf.o libsa.a mkfs.o
-	ld -X -o $@ srt0.o conf.o $@.o libsa.a -lc
+mkfs: srt0.o conf.o libsa.a mkfs.o csv.o
+	ld -X -o $@ srt0.o conf.o $@.o libsa.a -lkern csv.o
 
-restor: srt0-i.o conf.o libsa.a restor.o
-	ld -X -i -o $@ srt0-i.o conf.o $@.o libsa.a -lc
+restor: srt0-i.o conf.o libsa.a restor.o csv.o
+	ld -X -i -o $@ srt0-i.o conf.o $@.o libsa.a -lkern csv.o
 
-icheck: srt0-i.o conf.o libsa.a icheck.o
-	ld -X -i -o $@ srt0-i.o conf.o $@.o libsa.a -lc
+icheck: srt0-i.o conf.o libsa.a icheck.o csv.o
+	ld -X -i -o $@ srt0-i.o conf.o $@.o libsa.a -lkern csv.o
 
-disklabel: srt0.o conf.o libsa.a disklabel.o displaylab.o
-	ld -X -o $@ srt0.o conf.o $@.o displaylab.o libsa.a -lc
+disklabel: srt0.o conf.o libsa.a disklabel.o displaylab.o csv.o
+	ld -X -o $@ srt0.o conf.o $@.o displaylab.o libsa.a -lkern csv.o
 
 maketape: maketape.c
 	cc -O -o $@ maketape.c
@@ -145,8 +150,8 @@ maketape: maketape.c
 makesimtape: makesimtape.c
 	cc -O -o $@ makesimtape.c
 
-toyset: toyset.o srt0.o conf.o libsa.a
-	ld -X -o $@ srt0.o conf.o $@.o libsa.a -lc
+toyset: toyset.o srt0.o conf.o libsa.a csv.o
+	ld -X -o $@ srt0.o conf.o $@.o libsa.a -lkern csv.o
 
 tags: FRC
 	rm -f tags

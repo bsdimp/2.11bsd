@@ -3,7 +3,7 @@
  * All rights reserved.  The Berkeley software License Agreement
  * specifies the terms and conditions for redistribution.
  *
- *	@(#)mch_xxx.s	1.5 (2.11BSD GTE) 12/15/94
+ *	@(#)mch_xxx.s	1.6 (2.11BSD) 2000/11/20
  */
 #include "DEFS.h"
 #include "../machine/mch_iopage.h"
@@ -319,7 +319,7 @@ ENTRY(clrbuf)
 	clr	(r0)+
 	clr	(r0)+
 	clr	(r0)+
-	sob	r1,1b
+	sob	r1,3b
 4:
 #ifdef DIAGNOSTIC
 	jmp	_mapout			/ map out buffer
