@@ -3,7 +3,7 @@
  * All rights reserved.  The Berkeley software License Agreement
  * specifies the terms and conditions for redistribution.
  *
- *	@(#)conf.c	2.7 (2.11BSD) 1997/11/7
+ *	@(#)conf.c	2.8 (2.11BSD) 2000/10/20
  */
 
 #include "../h/param.h"
@@ -127,13 +127,18 @@ devlabel(io, fnc)
 	int	(*strat)() = devsw[io->i_ino.i_dev].dv_strategy;
 	register struct disklabel *lp;
 	register struct partition *pi;
+	int	status;
 	
+	io->i_flgs |= F_LABEL;		/* label operation now in progress */
+
 	switch	(fnc)
 		{
 		case	WRITELABEL:
-			return(writelabel(io, strat));
+			status = writelabel(io, strat);
+			break;
 		case	READLABEL:
-			return(readlabel(io, strat));
+			status = readlabel(io, strat);
+			break;
 		case	DEFAULTLABEL:
 /*
  * Zero out the label buffer and then assign defaults common to all drivers.
@@ -165,11 +170,15 @@ devlabel(io, fnc)
 */
 			lp->d_bbsize = 512;
 			lp->d_sbsize = SBSIZE;
-			return((*dvlab)(io));
+			status = (*dvlab)(io);
+			break;
 		default:
 			printf("devlabel: bad fnc %d\n");
-			return(-1);
+			status = -1;
+			break;
 		}
+	io->i_flgs &= ~F_LABEL;
+	return(status);
 	}
 
 /*
@@ -212,6 +221,11 @@ devname(io)
  * Check for end of volume.  Actually this checks for end of partition.
  * Since this is almost always called when reading unlabeled disks (treating
  * a floppy as a short tape for example) it's effectively an EOV check.
+ *
+ * If a 'label' operation is in progress do not perform any checking because
+ * there is nothing to compare against.   The label hasn't been read yet!  The
+ * block number has been calculated/set to be the label sector so obviously 
+ * an end of volume condition can not exist.
 */
 
 deveovchk(io)
@@ -220,6 +234,8 @@ deveovchk(io)
 	register struct partition *pi;
 	daddr_t  sz, eov;
 
+	if	(io->i_flgs & F_LABEL)
+		return(1);
 	pi = &io->i_label.d_partitions[io->i_part];
 	sz = io->i_cc / 512;
 /*

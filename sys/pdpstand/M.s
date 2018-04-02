@@ -1,6 +1,6 @@
 /
 /	SCCS id	@(#)M.s	1.7 (Berkeley)	7/11/83
-/		@(#)M.s	3.1 (2.11BSD)	1995/06/01 (sms@wlv.iipo.gtegsc.com)
+/		@(#)M.s	3.2 (2.11BSD)	2000/10/17 (sms@moe.2bsd.com)
 /
 / Startup code for two-stage bootstrap with support for autoboot.
 / Supports 11/45, 11/70, 11/53, 11/73, 11/83, 11/84, 11/93, 11/94
@@ -104,7 +104,7 @@ N	= 3			/ 3*64Kb = 192Kb
 /
 /	If 11/40 class processor, only need set the I space registers
 /
-	movb	_sep_id, _ksep
+	movb	_sep_id,_ksep
 	jeq	1f
 
 /
@@ -199,24 +199,26 @@ cpuprobe:
 1:
 	mov	$nomfpt,nofault	/ catch possible fault from instruction
 	mfpt			/ 23/24, 44, and KDJ-11 have this instruction
+	bic	$!377,r0	/ cpu module in low byte
 	cmp	r0,$1		/ 44?
 	bne	1f		/ no - br
 	mov	$1,*$MSCR	/ disable cache parity traps
-	mov	$44.,_cputype
-	rts	pc
+	mov	$44.,r0
+	br	out
 1:
 	cmp	r0,$5		/ KDJ-11?
 	bne	2f		/ no - br
 	mov	*$MAINT,r0	/ get system maint register
 	ash	$-4,r0		/ move down and
 	bic	$177760,r0	/  isolate the module id
-	mov	$1,*$MSCR	/ disable cache parity traps
 	movb	j11typ(r0),r0	/ lookup cpu type
 	movb	_ubmap,r1	/ unibus?
-	beq	1f		/ nope - br
-	bis	$2,*$MSCR	/ disable unibus traps
-1:
 	add	r1,r0		/ bump the cpu type (93 -> 94, 83 ->84)
+	mov	$out,nofault	/ catch fault if no MSCR register (53)
+	mov	$1,*$MSCR	/ disable cache parity traps
+	tst	r1		/ unibus machine?
+	beq	out		/ nope - we're done
+	bis	$2,*$MSCR	/ disable unibus traps
 	br	out
 2:
 	cmp	r0,$3		/ 23 or 24?
@@ -237,10 +239,10 @@ nomfpt:
 2:
 	mov	$40.,r0		/ assume 40
 	mov	$out,nofault
-	tst	*$MSCR		/ 60 has MSCR, 40 doesn't
+	mov	$1,*$MSCR	/ 60 has MSCR, 40 doesn't - disable cache traps
 	mov	$60.,r0
-	mov	$1,*$MSCR
 out:
+	clr	nofault
 	mov	r0,_cputype
 	rts	pc
 

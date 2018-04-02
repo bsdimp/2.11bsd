@@ -3,12 +3,11 @@
  * All rights reserved.  The Berkeley software License Agreement
  * specifies the terms and conditions for redistribution.
  *
- *	@(#)ufs_alloc.c	1.3 (2.11BSD GTE) 1996/9/19
+ *	@(#)ufs_alloc.c	1.4 (2.11BSD) 2000/10/14
  */
 
 #include "param.h"
 #include "../machine/seg.h"
-
 #include "fs.h"
 #include "dir.h"
 #include "inode.h"
@@ -37,8 +36,9 @@ balloc(ip, flags)
 {
 	register struct fs *fs;
 	register struct buf *bp;
-	int	async;
+	int	async, i;
 	daddr_t bno;
+	char *fullerr = "file system full";
 
 	fs = ip->i_fs;
 	async = fs->fs_flags & MNT_ASYNC;
@@ -104,19 +104,15 @@ balloc(ip, flags)
 nospace:
 	fs->fs_nfree = 0;
 	fs->fs_tfree = 0;
-	fserr(fs, "file system full");
+	fserr(fs, fullerr);
 	/*
 	 * THIS IS A KLUDGE...
 	 * SHOULD RATHER SEND A SIGNAL AND SUSPEND THE PROCESS IN A
 	 * STATE FROM WHICH THE SYSTEM CALL WILL RESTART
 	 */
-	uprintf("\n%s: write failed, file system full\n", fs->fs_fsmnt);
-	{
-		register int i;
-
-		for (i = 0; i < 5; i++)
-			sleep((caddr_t)&lbolt, PRIBIO);
-	}
+	uprintf("\n%s: %s\n", fs->fs_fsmnt, fullerr);
+	for (i = 0; i < 5; i++)
+		sleep((caddr_t)&lbolt, PRIBIO);
 	u.u_error = ENOSPC;
 	return(NULL);
 }
@@ -181,10 +177,6 @@ loop:
 	if (fs->fs_nbehind < 4 * NICINOD) {
 		first = 1;
 		ino = fs->fs_lasti;
-#ifdef DIAGNOSTIC
-		if (itoo(ino))
-			panic("ialloc");
-#endif DIAGNOSTIC
 		adr = itod(ino);
 	} else {
 fromtop:
@@ -202,25 +194,37 @@ fromtop:
 			continue;
 		}
 		dp = (struct dinode *)mapin(bp);
-		for (i = 0;i < INOPB;i++) {
+		for (i = 0; i < INOPB; i++, ino++, dp++) {
 			if (dp->di_mode != 0)
-				goto cont;
+				continue;
 			if (ifind(pip->i_dev, ino))
-				goto cont;
+				continue;
 			fs->fs_inode[fs->fs_ninode++] = ino;
 			if (fs->fs_ninode >= NICINOD)
 				break;
-		cont:
-			ino++;
-			dp++;
 		}
 		mapout(bp);
 		brelse(bp);
 		if (fs->fs_ninode >= NICINOD)
 			break;
 	}
+/*
+ * If some inodes have been found but not NICINOD of them the intent was to
+ * go back and scan the inode list from the beginning and add new inodes to
+ * fs_inode[].   On filesystems with few free inodes this had the unfortunate 
+ * side effect of finding the inodes we already knew about!   The resulting
+ * duplicates caused fs_ninode to be higher than it should have been.   Part
+ * of the allocation logic said there were inodes available (fs_ninode > 0)
+ * while 'fs_tinode = 0' meant there were none!
+ *
+ * Since we're going to scan from the beginning simply toss away any inodes
+ * already found.  Either NICINOD or all available inodes will be found.
+*/
 	if (fs->fs_ninode < NICINOD && first)
+		{
+		fs->fs_ninode = 0;
 		goto fromtop;
+		}
 	fs->fs_lasti = inobas;
 	fs->fs_ilock = 0;
 	wakeup((caddr_t)&fs->fs_ilock);

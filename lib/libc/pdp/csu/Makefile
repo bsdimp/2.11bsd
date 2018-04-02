@@ -3,15 +3,13 @@
 # All rights reserved.  The Berkeley software License Agreement
 # specifies the terms and conditions for redistribution.
 #
-#	@(#)Makefile	5.6.1 (2.11BSD GTE) 4/9/94
+#	@(#)Makefile	5.6.2 (2.11BSD) 2000/10/24
 #
 #	crt0	Normal C run time startoff
 #	mcrt0	C run time start off for profiling, ``prof'' conventions
-#	gcrt0	C run time start off for profiling, ``gprof'' conventions
 #
 DESTDIR=
-SRCS=	crt0.s mon.c mcount.s gmon.c
-#OBJS=	crt0.o mcrt0.o gcrt0.o mon.o gmon.o
+SRCS=	crt0.s mon.c mcount.s
 OBJS=	crt0.o mcrt0.o mon.o
 CFLAGS=	-O ${DEFS}
 TAGSFILE=tags
@@ -21,7 +19,6 @@ all: ${OBJS}
 install: ${OBJS}
 	install -c -m 0644 crt0.o ${DESTDIR}/lib/crt0.o
 	install -c -m 0644 mcrt0.o ${DESTDIR}/lib/mcrt0.o
-#	install -c -m 0644 gcrt0.o ${DESTDIR}/usr/lib/gcrt0.o
 
 crt0.o:	crt0.s
 	/lib/cpp ${DEFS} ${DFLAGS} crt0.s | sed 's;^#;/;' | as -o x.o
@@ -32,9 +29,6 @@ moncrt0.o: crt0.s
 	/lib/cpp ${DEFS} ${DFLAGS} -DMCRT0 crt0.s | sed 's;^#;/;' | as -o x.o
 	ld -x -r -o moncrt0.o x.o
 	rm -f x.o
-
-gcrt0.o: moncrt0.o gmon.o
-	ld -x -r -o gcrt0.o moncrt0.o gmon.o
 
 mcrt0.o: moncrt0.o mon.o
 	ld -x -r -o mcrt0.o moncrt0.o mon.o
@@ -47,13 +41,6 @@ mon.o: mon.c mcount.s mon.ex
 	as - -o x.o xx.s
 	ld -x -r -o mon.o x.o
 	rm -f x.o x.s xx.s mon.s
-
-gmon.o: gmon.c gmon.h gmon.ex
-	cc ${CFLAGS} -S ${DFLAGS} gmon.c
-	ex - gmon.s < gmon.ex
-	as -o x.o gmon.s
-	ld -x -r -o gmon.o x.o
-	rm -f x.o gmon.s
 
 tags:	
 	cwd=`pwd`; \
@@ -87,7 +74,7 @@ depend:
 
 crt0.o: crt0.s
 mon.o: mon.c
-gmon.o: gmon.c ./gmon.h
+mcount.o: mcount.s ./../sys/SYS.h /usr/include/syscall.h
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY
 # see make depend above

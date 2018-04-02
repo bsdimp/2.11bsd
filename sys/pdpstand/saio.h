@@ -3,7 +3,7 @@
  * All rights reserved.  The Berkeley software License Agreement
  * specifies the terms and conditions for redistribution.
  *
- *	@(#)saio.h	2.2 (2.11BSD GTE) 1996/3/8
+ *	@(#)saio.h	2.3 (2.11BSD) 2000/10/20
  */
 
 /*
@@ -42,6 +42,7 @@ struct	iob {
 #define	F_ALLOC	04
 #define	F_FILE	010
 #define	F_TAPE	020
+#define	F_LABEL	040
 #define	READ	F_READ
 #define	WRITE	F_WRITE
 
