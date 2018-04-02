@@ -3,7 +3,7 @@
  * All rights reserved.  The Berkeley software License Agreement
  * specifies the terms and conditions for redistribution.
  *
- *	@(#)boot.c	3.0 (2.11BSD) 1996/5/9
+ *	@(#)boot.c	4.0 (2.11BSD) 2016/3/18
  */
 #include "../h/param.h"
 #include "../machine/seg.h"
@@ -11,6 +11,13 @@
 #include "../h/reboot.h"
 #include "saio.h"
 #include <a.out.h>
+
+/*
+ * Some people want the system to go multi-user on power-up while others 
+ * prefer to enter ^D at the single user prompt.  This define offers the 
+ * choice of old (traditional) or new (automatic multi-user) behaviour.
+*/
+#define AUTOMULTIUSER 0		/* 0 = old behaviour, !0 = new (automatic) behaviour */
 
 #undef	btoc			/* to save space */
 #define	KB	* 1024L
@@ -153,8 +160,9 @@ main()
 	unit = (minor(bootdev) >> 3) & 7;
 	part = minor(bootdev) & 7;
 
-	printf("\n%d%s from %s(%d,%d,%d) at 0%o\n", cputype, module, 
-		devsw[major(bootdev)].dv_name, bootctlr, unit, part, bootcsr);
+	printf("\n%d%s from %s(%d,%d,%d) at 0%o\n",
+		cputype, module, devsw[major(bootdev)].dv_name,
+		bootctlr, unit, part, bootcsr);
 
 	strcpy(defdev, devsw[major(bootdev)].dv_name);
 	strcat(defdev, "(");
@@ -172,7 +180,24 @@ main()
 	 * this is an automatic reboot, otherwise do it the hard way.
 	 */
 	if (checkword != ~bootopts)
-		bootopts = RB_SINGLE | RB_ASKNAME;
+#if AUTOMULTIUSER == 1
+		bootopts = 0;		/* If from a power on /cold boot */
+#else
+		bootopts = RB_ASKNAME | RB_SINGLE;	/* traditional (previous) method */
+#endif
+
+	if ((bootopts & RB_ASKNAME) == 0) {
+		printf("Press <CR> to boot, or any other key to abort:  ");
+		for (i=5; i>=0; i--) {
+			printf("\b%d", i);
+			j = getchar2(50);
+			if (j != -1) {
+				if (j != '\n') bootopts = RB_ASKNAME|RB_SINGLE;
+				break;
+			}
+		}
+		printf("\n");
+	}
 	j = -1;
 	do {
 		if (bootopts & RB_ASKNAME) {
@@ -208,7 +233,7 @@ another:
 		j = -1;
 		if	(cp = index(line, ' '))
 			{
-			if	((bootflags(cp, &bootopts, "bootfile")) == -1)
+			if	(bootflags(cp, &bootopts) == -1)
 				{
 				bootopts |= RB_ASKNAME;
 				continue;
@@ -684,19 +709,18 @@ dobootopts(cp, opt)
 	if	(strncmp(cp, bflags, sizeof (BOOTFLAGS) - 1) == 0)
 		{
 		if	(cp = arg(cp))
-			(void) bootflags(cp, &bootopts, bflags);
+			(void) bootflags(cp, opt);
 		else
-			printf("%s = %u\n", bflags, bootopts);
+			printf("%s = %u\n", bflags, *opt);
 		return(0);
 		}
-	printf("bad cmd: %s\n", cp);
+	usage();
 	return(0);
 	}
 
-bootflags(cp, pflags, tag)
+bootflags(cp, pflags)
 	register char *cp;
 	int *pflags;
-	char *tag;
 	{
 	int first = 1;
 	int flags = 0;
@@ -715,9 +739,6 @@ bootflags(cp, pflags, tag)
 					{
 					case	' ':
 						goto nextarg;
-					case	'a':
-						flags |= RB_ASKNAME;
-						break;
 					case	'D':
 						flags |= RB_AUTODEBUG;
 						break;
@@ -730,8 +751,11 @@ bootflags(cp, pflags, tag)
 					case	's':
 						flags |= RB_SINGLE;
 						break;
+					case	'm':
+						flags &= ~RB_SINGLE;
+						break;
 					default:
-						goto usage;
+						goto err;
 					}
 				continue;
 			}
@@ -740,14 +764,19 @@ bootflags(cp, pflags, tag)
 			*pflags = atoi(cp);
 			return(0);
 			}
-		goto usage;
+		goto err;
 
 nextarg: 	;
 		}
 	if	(first == 0)
 		*pflags = flags;
 	return(0);
-usage:
-	printf("usage: %s [ -aDrRs ]\n", tag);
+err:
+	usage();
 	return(-1);
 	}
+
+usage()
+{
+	printf("usage: boot [ -DrRsm ]\n");
+}

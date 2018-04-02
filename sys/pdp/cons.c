@@ -3,7 +3,7 @@
  * All rights reserved.  The Berkeley software License Agreement
  * specifies the terms and conditions for redistribution.
  *
- *	@(#)cons.c	1.3 (2.11BSD GTE) 1997/4/25
+ *	@(#)cons.c	1.4 (2.11BSD) 2016/3/16
  */
 
 /*
@@ -62,7 +62,7 @@ cnopen(dev, flag)
 	if ((tp->t_state&TS_ISOPEN) == 0) {
 		ttychars(tp);
 		tp->t_state = TS_ISOPEN|TS_CARR_ON;
-		tp->t_flags = EVENP|ECHO|XTABS|CRMOD;
+		tp->t_flags = ANYP|ECHO|XTABS|CRMOD;
 	}
 	if (tp->t_state&TS_XCLUDE && u.u_uid != 0)
 		return (EBUSY);
@@ -163,8 +163,12 @@ cnstart(tp)
 	c = getc(&tp->t_outq);
 	if (tp->t_flags & (RAW|LITOUT))
 		addr->dlxbuf = c&0xff;
+	else if ((tp->t_flags & (EVENP | ODDP)) == EVENP)
+		addr->dlxbuf = c | (partab[c] & 0200);
+	else if ((tp->t_flags & (EVENP | ODDP)) == ODDP)
+		addr->dlxbuf = c | ((partab[c] & 0200) ^ 0200);
 	else
-		addr->dlxbuf = c&0xff; /* | (partab[c] & 0200); /bqt */
+		addr->dlxbuf = c;
 	tp->t_state |= TS_BUSY;
 out:
 	splx(s);

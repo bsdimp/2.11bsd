@@ -3,6 +3,9 @@
  *
  * 1995/05/31 - unit number changed to be in bits 3-5 of 'bootdev'
  *
+ * 2016/03/10 - force bootflags to RB_ASKNAME|RB_SINGLE
+ *              (auto/multi-user boot from tape makes no sense)
+ *
  * This is a universal tape boot which can handle HT, TM, TS and TMSCP
  * tapes.  This boot is FULL.  Some of the more extended error
  * checking had to be left out to get all the drivers to fit.
@@ -20,6 +23,7 @@
  * all the registers are used, this boot does not support the 
  * "jsr pc,0; br restart" convention.
  */
+
 NEWLOC	= [48.*1024.]			/ we relocate ourselves to this address
 OURSIZE = 512.				/ assume we are up to this size
 
@@ -101,6 +105,9 @@ done:
 	cmp	blkcnt,sp
 	blo	1b
 	mov	csr,r1			/ put things where 'boot'
+	mov	$3,r4			/ bootopts (RB_SINGLE|RB_ASKNAME)
+	mov	r4,r2
+	com	r2			/ checkword
 	mov	unit,r3			/  expects them
 	ash	$3,r3			/ unit # in bits 3-5
 	bis	major,r3		/ the major device to high byte
