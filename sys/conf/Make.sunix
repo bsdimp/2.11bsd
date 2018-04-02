@@ -9,7 +9,7 @@
 # software without specific prior written permission. This software
 # is provided ``as is'' without express or implied warranty.
 #
-#	2.13 (2.11BSD) 1999/9/24
+#	2.14 (2.11BSD) 2001/8/3
 #
 #########################################################
 # Non-network, but separate I/D kernel			#
@@ -61,10 +61,11 @@ OV4=	hk.o init_main.o kern_prot.o tty_pty.o quota_kern.o quota_subr.o \
 	quota_ufs.o vm_swp.o vm_swap.o vm_proc.o
 OV5=	ht.o tm.o ts.o
 OV6=	tmscp.o tmscpdump.o mem.o
-OV7=	rl.o mch_fpsim.o ingreslock.o ufs_disksubr.o
+OV7=	mch_fpsim.o ingreslock.o ufs_disksubr.o
 OV8=	rx.o kern_sysctl.o vm_sched.o vm_text.o
 OV9=	kern_pdp.o kern_xxx.o ufs_syscalls2.o ufs_subr.o rk.o sys_pipe.o \
 	kern_sig2.o toy.o subr_log.o
+OV10=	rl.o
 
 KERNOBJ=${CONF} ${BASE} ${OV1} ${OV2} ${OV3} ${OV4} ${OV5} \
 	${OV6} ${OV7} ${OV8} ${OV9} ${OV10} ${OV11} ${OV12} \

@@ -3,11 +3,14 @@
  * All rights reserved.  The Berkeley software License Agreement
  * specifies the terms and conditions for redistribution.
  *
- *	@(#)rl.c	1.11 (2.11BSD GTE) 1998/4/3
+ *	@(#)rl.c	1.12 (2.11BSD) 2001/7/31
  */
 
 /*
  *  RL01/RL02 disk driver
+ *
+ * Date: July 31, 2001
+ * Fix major bug in handling of disklabels.  
  *
  * Date: July 19, 1996
  * The driver was taking the WRITE LOCK (RLMP_WL) bit to indicate
@@ -78,6 +81,7 @@ static	char	rlsoftmap = -1;	/* -1 = OK to change during attach
 	daddr_t	rlsize();
 	int	rlstrategy();
 	void	rldfltlbl();
+static	daddr_t	rlabsbn();
 
 struct	buf	rlutab[NRL];	/* Seek structure for each device */
 struct	buf	rltab;
@@ -368,6 +372,7 @@ rlstart()
 	register struct buf *bp, *dp;
 	struct	dkdevice *disk;
 	int unit;
+	daddr_t	bn;
 
 	if((bp = rltab.b_actf) == NULL) {
 		for(unit = 0;unit < NRL;unit++) {	/* Start seeks */
@@ -387,7 +392,7 @@ rlstart()
 					}
 				continue;
 				}
-			rlseek((int)(dp->b_actf->b_blkno/20l),unit);
+			rlseek((int)(rlabsbn(dp->b_actf)/20L),unit);
 		}
 
 		rlgss();	/* Put shortest seek on Q */
@@ -395,9 +400,10 @@ rlstart()
 			return;
 	}
 	rltab.b_active++;
+	bn = rlabsbn(bp);
 	rlp->dn = RLUNIT(bp->b_dev);
-	rlp->chn = bp->b_blkno / 20;
-	rlp->sn = (bp->b_blkno % 20) << 1;
+	rlp->chn = bn / 20;
+	rlp->sn = (bn % 20) << 1;
 	rlp->bleft = bp->b_bcount;
 	rlp->rl_un.w[0] = bp->b_xmem & 077;
 	rlp->rl_un.w[1] = (int) bp->b_un.b_addr;
@@ -469,10 +475,6 @@ rlintr()
 	rltab.b_active = NULL;
 	rltab.b_errcnt = 0;
 	rltab.b_actf = bp->av_forw;
-#ifdef notdef
-	if((bp != NULL)&&(rlutab[rl.dn].b_actf != NULL))
-		rlseek((int)(rlutab[rl.dn].b_actf->b_blkno/20l),rl.dn);
-#endif
 #ifdef	SOFUB_MAP
 	if	(rlsoftmap == 1)
 		sofub_relse(bp, bp->b_bcount);
@@ -765,5 +767,21 @@ rlgsts(drive)
 		rl.nblks[drive] = RL01_NBLKS;	/* drive RL01 */
 	rl_dk[drive].dk_flags |= DKF_ALIVE;
 	return(0);
+	}
+
+static	daddr_t	rlabsbn(bp)
+	register struct buf *bp;
+	{
+	struct	partition *pi;
+	struct	dkdevice *disk;
+	int	unit, part;
+	daddr_t	bn;
+
+	unit = RLUNIT(bp->b_dev);
+	part = dkpart(bp->b_dev);
+	disk = &rl_dk[unit];
+	pi = &disk->dk_parts[part];
+	bn = bp->b_blkno + pi->p_offset;
+	return(bn);
 	}
 #endif /* NRL */
