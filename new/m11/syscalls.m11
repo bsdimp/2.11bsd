@@ -1,4 +1,4 @@
-	.globl	$creat, $open, $close, $exit, $read, $write, $sbrk
+	.globl	$open, $close, $exit, $read, $write, $sbrk
 	.globl	$seek, $gettod, $fork, $wait, $execv
 
 	$exit	= ^O104401
@@ -8,7 +8,6 @@
 	$open	= ^O104405
 	$close	= ^O104406
 	$wait	= ^O104524
-	$creat	= ^O104410
 	$execv	= ^O104413
 	$gettod	= ^O104564
 	$sbrk	= ^O104505

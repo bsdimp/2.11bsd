@@ -133,7 +133,7 @@ x=	0			;invoke implications
 errrol=	1
 	.mcall	(at)param
 
-	.globl	$creat, $open, $close, $exit, $read, $write, $sbrk
+	.globl	$open, $close, $exit, $read, $write, $sbrk
 	.globl	$seek, $gettod, $fork, $wait, $execv
 
 				;init sectors
@@ -648,11 +648,12 @@ openo:				;open output file
 11$:	call	src.ap		;set up name in linbuf
 	mov	#linbuf,$crtnm	;  and pointer to name
 2$:	mov	$crtmd,-(sp)
+	mov	#3001,-(sp)	; O_CREAT | O_TRUNC | O_WRONLY
 	mov	$crtnm,-(sp)
 	tst	-(sp)
-	$creat
+	$open
 	bcs	99$
-	add	#6.,sp
+	add	#8.,sp
 	br	7$
 99$:
 	add	#6.,sp
