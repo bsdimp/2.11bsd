@@ -172,18 +172,7 @@ main()
 	 * this is an automatic reboot, otherwise do it the hard way.
 	 */
 	if (checkword != ~bootopts)
-		bootopts = 0;
-
-	printf("Press <CR> to boot, or any other key to abort:  ");
-	for (i=5; i>=0; i--) {
-		printf("\b%d", i);
-		j = getchar2(50);
-		if (j != -1) {
-			if (j != '\n') bootopts = RB_ASKNAME;
-			break;
-		}
-	}
-	printf("\n");
+		bootopts = RB_SINGLE | RB_ASKNAME;
 	j = -1;
 	do {
 		if (bootopts & RB_ASKNAME) {

@@ -1,5 +1,5 @@
-Current Patch Level: 448
-Date: January 5, 2010
+Current Patch Level: 449
+Date: March 3, 2016
 
 2.11 BSD
 ============
@@ -58,10 +58,8 @@ NOTE --
 	made to both the kernel and the application programs.
 
 	Steven M. Schultz
-	GTE Government Systems
-	112 South Lakeview Canyon Road
-	Thousand Oaks CA 91359
-	sms@wlv.iipo.gtegsc.com
+	sms@2bsd.com
+ 
 
 	Below is the original VERSION file distributed with 2.10.1BSD
 -----------------------------------------------------------------------
