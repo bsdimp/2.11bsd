@@ -3,11 +3,13 @@
  * All rights reserved.  The Berkeley software License Agreement
  * specifies the terms and conditions for redistribution.
  *
- *	@(#)hk.c	2.3 (2.11BSD GTE) 1998/4/3
+ *	@(#)hk.c	2.4 (2.11BSD) 2001/8/13
  */
 
 /*
  * RK611/RK0[67] disk driver
+ *
+ * 2001/8/11 - major disklabel handling bug fixed (basically they did not work)
  *
  * Heavily modified for disklabel support.  Still only supports 1 controller
  * (but who'd have more than one of these on a system anyhow?) - 1997/11/11 sms
@@ -60,6 +62,7 @@ struct	hkdevice *HKADDR;
 	daddr_t	hksize();
 	void	hkdfltlbl();
 	int	hkstrategy();
+static	daddr_t	hkabsbn();
 
 /* Can be u_char because all are less than 0377 */
 u_char	hk_offset[] =
@@ -344,7 +347,7 @@ register struct buf *bp;
 	if	(s == 0)
 		goto done;
 
-	bp->b_cylin = bp->b_blkno / HK_NSPC;
+	bp->b_cylin = hkabsbn(bp) / HK_NSPC;
 	mapalloc(bp);
 	dp = &hkutab[drive];
 	s = splbio();
@@ -489,7 +492,7 @@ loop:
 	hktab.b_active++;
 	unit = dkunit(bp->b_dev);
 	disk = &hk_dk[unit];
-	bn = bp->b_blkno;
+	bn = hkabsbn(bp);
 
 	sn = bn % HK_NSPC;
 	tn = sn / HK_NSECT;
@@ -681,6 +684,17 @@ retry:
 		hkaddr->hkcs1 = HK_IE;
 }
 
+hkioctl(dev, cmd, data, flag)
+	dev_t	dev;
+	int	cmd;
+	caddr_t	data;
+	int	flag;
+	{
+	struct dkdevice *disk = &hk_dk[dkunit(dev)];
+
+	return(ioctldisklabel(dev, cmd, data, flag, disk, hkstrategy));
+	}
+
 #ifdef HK_DUMP
 /*
  *  Dump routine for RK06/07
@@ -803,7 +817,7 @@ register struct	buf *bp;
 		npx = ndone / NBPG;
 		}
 	unit = dkunit(bp->b_dev);
-	bn = bp->b_blkno;
+	bn = hkabsbn(bp);
 	cn = bp->b_cylin - bn / HK_NSPC;
 	bn += npx;
 	cn += bn / HK_NSPC;
@@ -822,6 +836,10 @@ register struct	buf *bp;
 		unsigned o;
 		struct ubmap *ubp;
 
+/*
+ * The use of the blkno below is intentional since it is relative to the
+ * partition.
+*/
 		log(LOG_WARNING, "hk%d%c:  soft ecc sn %D\n",
 			unit, 'a' + (bp->b_dev & 07), bp->b_blkno + npx - 1);
 		mask = hkaddr->hkecpt;
@@ -934,5 +952,17 @@ register dev_t dev;
 	if      (didopen)
 		hkclose(dev, FREAD|FWRITE, S_IFBLK);
 	return(psize);
+	}
+
+static daddr_t
+hkabsbn(bp)
+	register struct buf *bp;
+	{
+	register struct partition *pi;
+	register struct dkdevice *disk;
+
+	disk = &hk_dk[dkunit(bp->b_dev)];
+	pi = &disk->dk_parts[dkpart(bp->b_dev)];
+	return(bp->b_blkno + pi->p_offset);
 	}
 #endif NHK > 0

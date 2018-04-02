@@ -3,7 +3,7 @@
  * All rights reserved.  The Berkeley software License Agreement
  * specifies the terms and conditions for redistribution.
  *
- *	@(#)kern_mman.c	1.3 (2.11BSD) 2000/2/20
+ *	@(#)kern_mman.c	1.4 (2.11BSD) 2001/8/26
  */
 
 #include "param.h"
@@ -31,6 +31,12 @@ sbrk()
 			n -= ctos(u.u_tsize) * stoc(1);
 	if (n < 0)
 		n = 0;
+	/* Check resource limits */
+	if (u.u_rlimit[RLIMIT_DATA].rlim_cur != RLIM_INFINITY &&
+	    n > btoc(u.u_rlimit[RLIMIT_DATA].rlim_cur)) {
+		u.u_error = ENOMEM;
+		return -1;
+	}
 	if (estabur(u.u_tsize, n, u.u_ssize, u.u_sep, RO))
 		return;
 	expand(n, S_DATA);
@@ -60,6 +66,11 @@ grow(sp)
 		si = stoc(ctos(((-sp) + ctob(1) - 1) / ctob(1))) - u.u_ssize;
 	if (si <= 0)
 		return (0);
+	/* Check resource limits */
+	if (u.u_rlimit[RLIMIT_STACK].rlim_cur != RLIM_INFINITY &&
+	    (u.u_ssize + si) > btoc(u.u_rlimit[RLIMIT_STACK].rlim_cur))
+		return 0;
+
 	if (estabur(u.u_tsize, u.u_dsize, u.u_ssize + si, u.u_sep, RO))
 		return (0);
 	/*

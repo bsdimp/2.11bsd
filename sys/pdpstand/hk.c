@@ -3,7 +3,7 @@
  * All rights reserved.  The Berkeley software License Agreement
  * specifies the terms and conditions for redistribution.
  *
- *	@(#)hk.c	2.3 (2.11BSD) 1997/11/7
+ *	@(#)hk.c	2.3 (2.11BSD) 2001/8/11
  */
 
 /*
@@ -101,25 +101,24 @@ hkopen(io)
 	{
 	register struct hkdevice *hkaddr;
 	int	drvbit;
-	int	unit, ctlr;
 
 	drvbit = 1 << io->i_unit;
 
 	if	(genopen(NHK, io) < 0)
 		return(-1);
 
-	if	((hk_mntflg[ctlr] & drvbit) == 0)
+	if	((hk_mntflg[io->i_ctlr] & drvbit) == 0)
 		{
-		hkaddr = HKcsr[ctlr];
-		hkaddr->hkcs2 = unit;
+		hkaddr = HKcsr[io->i_ctlr];
+		hkaddr->hkcs2 = io->i_unit;
 		hkaddr->hkcs1 = HK_SELECT|HK_GO;
 		while	((hkaddr->hkcs1 & HK_CRDY) == 0)
 			continue;
 		if	(hkaddr->hkcs1 & HK_CERR && hkaddr->hker & HKER_DTYE)
-			hk_drvtyp[ctlr] |= drvbit;
+			hk_drvtyp[io->i_ctlr] |= drvbit;
 		else
-			hk_drvtyp[ctlr] &= ~drvbit;
-		hk_mntflg[ctlr] |= drvbit;
+			hk_drvtyp[io->i_ctlr] &= ~drvbit;
+		hk_mntflg[io->i_ctlr] |= drvbit;
 		}
 	if	(devlabel(io, READLABEL) < 0)
 		return(-1);

@@ -1,5 +1,5 @@
 /*
- *	@(#)ioctl_compat.h	1.0 (2.11BSD SMS) 1997/3/28
+ *	@(#)ioctl_compat.h	1.1 (2.11BSD) 2001/8/14
  *
  * These are flags which have (finally) been removed from ioctl.h.  Several
  * of these have lacked any kernel support for quite a long time.  For others
@@ -39,7 +39,6 @@
 #define			BS1	0x0
 #define		ALLDELAY	(NLDELAY|TBDELAY|CRDELAY|VTDELAY|BSDELAY)
 #define		TILDE		0x0	/* (obsolete) place holder */
-#define		LTILDE		((int)TILDE>>16)) /* (obsolete) place holder */
-
+#define		LTILDE		0x0	/* (obsolete) place holder */
 #define		L001000		0x0
 #endif

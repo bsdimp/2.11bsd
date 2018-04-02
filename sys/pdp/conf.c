@@ -45,7 +45,7 @@ int	tmopen(), tmclose(), tmioctl(), tmstrategy();
 
 #include "hk.h"
 #if NHK > 0
-int	hkopen(), hkstrategy(), hkroot(), hkclose();
+int	hkopen(), hkstrategy(), hkroot(), hkclose(), hkioctl();
 daddr_t	hksize();
 #else
 #define	hkopen		nodev
@@ -53,6 +53,7 @@ daddr_t	hksize();
 #define	hkroot		nulldev
 #define	hkstrategy	nodev
 #define	hksize		NULL
+#define	hkioctl		nodev
 #endif
 
 #include "xp.h"
@@ -411,7 +412,7 @@ struct cdevsw	cdevsw[] = {
 	drstrategy,
 /* hk = 13 */
 	hkopen,		hkclose,	rawrw,		rawrw,
-	nodev,		nulldev,	0,		seltrue,
+	hkioctl,	nulldev,	0,		seltrue,
 	hkstrategy,
 /* ra = 14 */
 	raopen,		raclose,	rawrw,		rawrw,

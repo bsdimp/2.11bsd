@@ -936,7 +936,6 @@
 .if \n(mo-11 .ds MO December
 .nr *y \n(yr+1900
 .ds DY \*(MO \n(dy, \n(*y
-.ie
 .nr * 0 1
 .IZ
 .em EM

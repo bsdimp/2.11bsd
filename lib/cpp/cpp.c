@@ -1,4 +1,4 @@
-/* static char sccsid[] = "@(#)cpp.c	1.8.2 1996/7/11"; */
+/* static char sccsid[] = "@(#)cpp.c	1.8.3 2001/8/26"; */
 
 #ifdef FLEXNAMES
 #define	NCPS	128
@@ -197,6 +197,7 @@ STATIC	struct symtab *incloc;
 STATIC	struct symtab *ifloc;
 STATIC	struct symtab *elsloc;
 STATIC	struct symtab *eifloc;
+STATIC	struct symtab *elfloc;
 STATIC	struct symtab *ifdloc;
 STATIC	struct symtab *ifnloc;
 STATIC	struct symtab *ysysloc;
@@ -206,6 +207,8 @@ STATIC	struct symtab *ulnloc;
 STATIC	struct symtab *uflloc;
 STATIC	int	trulvl;
 STATIC	int	flslvl;
+STATIC	int	elflvl;
+STATIC	int	elslvl;
 
 sayline(where)
 	int where;
@@ -748,13 +751,30 @@ for (;;) {
 		if (flslvl) {if (--flslvl==0) sayline(CONT);}
 		else if (trulvl) --trulvl;
 		else pperror("If-less endif",0);
+		if (flslvl==0) elflvl=0;
+		elslvl=0;
+	} else if (np==elfloc) {/* elif */
+		if (flslvl == 0) elflvl = trulvl;
+		if (flslvl) {
+			if (elflvl > trulvl); 
+			else if (--flslvl!=0) ++flslvl;
+			else { newp=p;
+				if (yyparse()) {++trulvl;sayline(CONT);}
+				else ++flslvl;
+				p=newp;
+			}
+		} else if (trulvl) {++flslvl; --trulvl;}
+		else pperror("If-less elif",0);
 	} else if (np==elsloc) {/* else */
 		if (flslvl) {
-			if (--flslvl!=0) ++flslvl;
+			if (elflvl > trulvl);
+			else if (--flslvl!=0) ++flslvl;
 			else {++trulvl; sayline(CONT);}
 		}
 		else if (trulvl) {++flslvl; --trulvl;}
 		else pperror("If-less else",0);
+		if (elslvl==trulvl+flslvl) pperror("Too many else", 0);
+		elslvl=trulvl+flslvl;
 	} else if (np==udfloc) {/* undefine */
 		if (flslvl==0) {
 			++flslvl; p=skipbl(p); slookup(inp,p,DROP); --flslvl;
@@ -1177,6 +1197,7 @@ main(argc,argv)
 	udfloc=ppsym("undef");
 	incloc=ppsym("include");
 	elsloc=ppsym("else");
+	elfloc=ppsym("elif");
 	eifloc=ppsym("endif");
 	ifdloc=ppsym("ifdef");
 	ifnloc=ppsym("ifndef");

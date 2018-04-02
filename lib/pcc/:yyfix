@@ -1,3 +1,4 @@
+#!/bin/sh
 >rodata.c
 for i in $*
 do ed - y.tab.c <<!
