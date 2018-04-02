@@ -14,7 +14,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- *	@(#)ftpcmd.y	5.20 (Berkeley) 2/28/89
+ *	@(#)ftpcmd.y	5.20.1 (2.11BSD) 2001/2/7
  */
 
 /*
@@ -458,9 +458,10 @@ cmd:		USER SP username CRLF
 					struct tm *gmtime();
 					t = gmtime(&stbuf.st_mtime);
 					reply(213,
-					    "19%02d%02d%02d%02d%02d%02d",
-					    t->tm_year, t->tm_mon+1, t->tm_mday,
-					    t->tm_hour, t->tm_min, t->tm_sec);
+					    "%04d%02d%02d%02d%02d%02d",
+					    t->tm_year + 1900, t->tm_mon+1,
+					    t->tm_mday, t->tm_hour, t->tm_min,
+					    t->tm_sec);
 				}
 			}
 			if ($4 != NULL)
