@@ -14,11 +14,11 @@
 # IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
 # WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #
-#	@(#)Makefile	5.4.15 (2.11BSD) 1997/12/8
+#	@(#)Makefile	5.4.16 (2.11BSD) 2001/11/19
 #
 MDIR=	/usr/man/cat3
 SRCS1=	abort.3 abs.3 alarm.3 asinh.3 assert.3 atof.3 bstring.3 byteorder.3 \
-	compat-sys5.3 crypt.3 ctime.3 ctype.3 curses.3 dbm.3 daemon.3 \
+	compat-sys5.3 creat.3 crypt.3 ctime.3 ctype.3 curses.3 dbm.3 daemon.3 \
 	devname.3 directory.3 ecvt.3 end.3 erf.3 err.3 execl.3 exit.3 \
 	exp.3 fclose.3 ferror.3 floor.3 \
 	fopen.3 fread.3 frexp.3 fseek.3 getc.3 getdisk.3 getenv.3 getfsent.3 \
@@ -39,7 +39,7 @@ SRCS2=	insque.3 intro.3 j0.3 l3tol.3 ldfps.3 lgamma.3 lib2648.3 \
 	syserrlst.3 \
 	utime.3 valloc.3 varargs.3
 OBJS1=	abort.0 abs.0 alarm.0 asinh.0 assert.0 atof.0 bstring.0 byteorder.0 \
-	compat-sys5.0 crypt.0 ctime.0 ctype.0 curses.0 dbm.0 daemon.0 \
+	compat-sys5.0 creat.0 crypt.0 ctime.0 ctype.0 curses.0 dbm.0 daemon.0 \
 	devname.0 directory.0 ecvt.0 end.0 erf.0 err.0 execl.0 exit.0 \
 	exp.0 fclose.0 ferror.0 floor.0 \
 	fopen.0 fread.0 frexp.0 fseek.0 getc.0 getdisk.0 getenv.0 getfsent.0 \

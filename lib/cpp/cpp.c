@@ -148,6 +148,7 @@ STATIC	char	*fnames[MAXINC];
 STATIC	char	*dirnams[MAXINC];	/* actual directory of #include files */
 STATIC	int	fins[MAXINC];
 STATIC	int	lineno[MAXINC];
+STATIC	char	*lowmem;	/* set to lowest address that malloc uses */
 
 STATIC	char	*dirs[10];	/* -I and <> directories */
 char *strdex(), *copy(), *subst(), *trmdir();
@@ -804,6 +805,8 @@ for (;;) {
 				cp2 = cp;
 				while (*cp2 != '"' && cp2 < inp)
 					cp2++;
+				if (fnames[ifno] >= lowmem)
+					free(fnames[ifno]);
 				fnames[ifno] = savestring(cp, cp2);
 			}
 			continue;
@@ -823,6 +826,8 @@ savestring(start, finish)
 	register char *cp;
 
 	retbuf = (char *) calloc(finish - start + 1, sizeof (char));
+	if (retbuf == NULL)
+		pperror("calloc");
 	cp = retbuf;
 	while (start < finish)
 		*cp++ = *start++;
@@ -1088,6 +1093,8 @@ main(argc,argv)
 	fnames[ifno=0] = (char *)inquire(stdin, _FILENAME);
 	dirnams[0] = dirs[0] = trmdir(copy(fnames[0]));
 # endif
+	lowmem = (char *)sbrk(0);	/* for free() */
+
 	for(i=1; i<argc; i++)
 		{
 		switch(argv[i][0])

@@ -14,11 +14,11 @@
 # IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
 # WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #
-#	@(#)Makefile	2.11 (2.11BSD) 2000/3/4
+#	@(#)Makefile	2.12 (2.11BSD) 2001/11/19
 #
 MDIR=	/usr/man/cat2
 SRCS=	accept.2 access.2 acct.2 adjtime.2 bind.2 brk.2 chdir.2 chmod.2 \
-	chown.2 chroot.2 close.2 connect.2 creat.2 dup.2 execve.2 exit.2 \
+	chown.2 chroot.2 close.2 connect.2 dup.2 execve.2 exit.2 \
 	chflags.2 \
 	fcntl.2 fetchi.2 flock.2 fork.2 fperr.2 fsync.2 getdtablesize.2 \
 	getgroups.2 gethostid.2 gethostname.2 getitimer.2 \
@@ -37,7 +37,7 @@ SRCS=	accept.2 access.2 acct.2 adjtime.2 bind.2 brk.2 chdir.2 chmod.2 \
 	stat.2 statfs.2 swapon.2 symlink.2 sync.2 syscall.2 truncate.2 ucall.2 \
 	umask.2 unlink.2 utimes.2 vfork.2 vhangup.2 wait.2 write.2
 OBJS=	accept.0 access.0 acct.0 adjtime.0 bind.0 brk.0 chdir.0 chmod.0 \
-	chown.0 chroot.0 close.0 connect.0 creat.0 dup.0 execve.0 exit.0 \
+	chown.0 chroot.0 close.0 connect.0 dup.0 execve.0 exit.0 \
 	chflags.0 \
 	fcntl.0 fetchi.0 flock.0 fork.0 fperr.0 fsync.0 getdtablesize.0 \
 	getgroups.0 gethostid.0 gethostname.0 getitimer.0 \

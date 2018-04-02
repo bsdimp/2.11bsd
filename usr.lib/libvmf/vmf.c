@@ -93,8 +93,7 @@ vmmapseg(vspace, segno)
 
 	nmapsegs++;
 
-	if	(segno >= vspace->v_maxsegno || segno < 0)
-		{
+	if (segno >= vspace->v_maxsegno) {
 #ifdef DEBUG
 		fprintf(stderr,"vmmapseg vspace0%o segno%d\n", vspace, segno);
 #endif
@@ -110,13 +109,12 @@ vmmapseg(vspace, segno)
 			{     /* not in memory */
 			int status;
 
-			for (s = (struct vseg *)s->s_link.back; s->s_lock_count != 0; 
-					s = (struct vseg *)s->s_link.back)
-				{
-				if (s == (struct vseg *)seghead)
-					vmerror("Too many locked segs!");
+			for (s = (struct vseg *)s->s_link.back;
+			    s !=(struct vseg *)seghead && s->s_lock_count != 0;
+			    s = (struct vseg *)s->s_link.back)
 				debugseg(s, "back skip");
-				}
+			if (s == (struct vseg *)seghead)
+				vmerror("Too many locked segs!");
 			debugseg(s, "dump on");
 			if	(s->s_flags & S_DIRTY)
 				if	(swap(s, write) != 0)

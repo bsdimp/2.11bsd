@@ -478,6 +478,8 @@ char **argv;
 			}
 			curov++;
 			continue;
+		case 'g': /* Just ignore the debug flag */
+			continue;
 		case 'y':
 		case 'A':
 		case 'H':

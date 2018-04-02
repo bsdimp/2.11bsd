@@ -74,7 +74,8 @@ oops:
 			exit(1);
 		}
 	}
-	\fBif\fR (lseek(efil, (long) a1, 0) |\|| read(efil, buf, 256) <= 0)
+	\fBif\fR (lseek(efil, (long) a1, 0) <= 0 |\||
+	    read(efil, buf, 256) <= 0)
 		\fBgoto\fR oops;
 	printf(buf, a2, a3, a4);
 }

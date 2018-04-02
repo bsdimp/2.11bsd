@@ -16,7 +16,7 @@ MAJOR = 5			/ major # from bdevsw[]
 
 MSCPSIZE =	64.	/ One MSCP command packet is 64bytes long (need 2)
 
-RASEMAP	=	140000	/ RA controller owner semaphore
+RASEMAP	=	100000	/ RA controller owner semaphore
 
 RAERR =		100000	/ error bit 
 RASTEP1 =	04000	/ step1 has started
@@ -287,23 +287,20 @@ racmd:
 	mov	$RASEMAP,*$ra+RARSPH	/ set mscp semaphores
 	mov	$RASEMAP,*$ra+RACMDH
 	mov	*raip,r0		/ tap controllers shoulder
-	mov	$ra+RACMDI,r0
+	mov	$ra+RACMDH,r0
 1:
 	tst	(r0)
-	beq	1b			/ Wait till command read
-	clr	(r0)+			/ Tell controller we saw it, ok.
+	bmi	1b			/ Wait till command read
+	mov	$ra+RARSPH,r0
 2:
 	tst	(r0)
-	beq	2b			/ Wait till response written
+	bmi	2b			/ Wait till response written
+	mov	$ra+RACMDI,r0
+	clr	(r0)+			/ Tell controller we saw it, ok.
 	clr	(r0)			/ Tell controller we go it
 	rts	pc
 
-/ Some adaptors (TD Systems Viking for example) require the vector field
-/  to be initialized even though interrupts are not enabled.  Use the primary
-/  vector of 0154.   The standalone MSCP driver does the same thing and later on
-/  the  kernel programs the adaptor with an assigned vector
-
-icons:	RAERR + 033			/ 033 = 0154 >> 2
+icons:	RAERR + 033
 	ra+RARING
 	0
 	RAGO
