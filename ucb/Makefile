@@ -3,7 +3,7 @@
 # All rights reserved.  The Berkeley software License Agreement
 # specifies the terms and conditions for redistribution.
 #
-#	@(#)Makefile	5.17.4 (2.11BSD GTE) 1997/6/27
+#	@(#)Makefile	5.17.5 (2.11BSD) 2000/5/17
 #
 DESTDIR=
 CFLAGS=	-O
@@ -12,7 +12,7 @@ SEPFLAG= -i
 # Programs that live in subdirectories, and have makefiles of their own.
 #
 SUBDIR=	Mail compress dbx error ex finger fp ftp indent lock man \
-	more msgs netstat pascal rdist sendbug talk tftp \
+	more msgs netstat pascal rdist rlogin sendbug talk tftp \
 	tn3270 tset vgrind vlp window
 
 # Shell scripts that need only be installed and are never removed.
@@ -34,7 +34,7 @@ NSTD=	clear ul vacation
 
 # Programs that must run setuid to root
 #
-SETUID=	quota rlogin rsh
+SETUID=	quota rsh
 
 # Programs that must run set-group-id kmem.
 #

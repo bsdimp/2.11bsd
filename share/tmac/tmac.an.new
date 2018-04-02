@@ -20,11 +20,16 @@
 .if "\nm"10" .ds ]m November
 .if "\nm"11" .ds ]m December
 '	# set the date
+.nr )y \n(yr-100
+.ie \n(yr<100 .ds ]Y \n(yr
+.el .ds ]Y 0\n()y
+'
+.nr )Y \n(yr+1900
 .if n \{.nr m \nm+1
-.	 ie \nd .ds ]W Modified \nm/\nd/\ny
-.	 el .ds ]W Printed \n(mo/\n(dy/\n(yr\}
-.if t \{.ie \nd .ds ]W \*(]m \nd, 19\ny
-.	 el .ds ]W \*(]m \n(dy, 19\n(yr\}
+.	 ie \nd .ds ]W Modified \nm/\nd/\*(]Y
+.	 el .ds ]W Printed \n(mo/\n(dy/\*(]Y\}
+.if t \{.ie \nd .ds ]W \*(]m \nd, \n()Y
+.	 el .ds ]W \*(]m \n(dy, \n()Y\}
 .if t .tr *\(**
 .ie n \{\
 .	ds lq \&"\"

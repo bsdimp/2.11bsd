@@ -3,10 +3,10 @@
  * All rights reserved.  The Berkeley software License Agreement
  * specifies the terms and conditions for redistribution.
  *
- *	@(#)param.h	1.6 (2.11BSD) 1999/9/5
+ *	@(#)param.h	1.7 (2.11BSD) 2000/5/17
  */
 
-#define	BSD	211		/* 2.11 * 10, as cpp doesn't do floats */
+#define	BSD	200005		/* System version (year and month) */
 
 #include <sys/localopts.h>
 #include <sys/stddef.h>		/* for 'offsetof' */

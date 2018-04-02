@@ -9,7 +9,7 @@
  * software without specific prior written permission. This software
  * is provided ``as is'' without express or implied warranty.
  *
- *	@(#)tcp_timer.c	7.11.1.2 (Berkeley) 3/16/88
+ *	@(#)tcp_timer.c	7.11.1.3 (2.11BSD) 2000/5/17
  */
 
 #include "param.h"
@@ -178,9 +178,7 @@ tcp_timers(tp, timer)
 		 * retransmit times until then.
 		 */
 		if (tp->t_rxtshift > TCP_MAXRXTSHIFT / 4) {
-#if BSD>=43
 			in_losing(tp->t_inpcb);
-#endif
 			tp->t_rttvar += (tp->t_srtt >> 2);
 			tp->t_srtt = 0;
 		}

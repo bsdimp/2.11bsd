@@ -9,7 +9,7 @@ char copyright[] =
 "@(#) Copyright (c) 1983 Regents of the University of California.\n\
  All rights reserved.\n";
 
-static char sccsid[] = "@(#)rlogin.c	5.10.1 (2.11BSD) 1997/3/28";
+static char sccsid[] = "@(#)rlogin.c	5.10.2 (2.11BSD) 2000/5/17";
 #endif
 
 /*
@@ -28,6 +28,8 @@ static char sccsid[] = "@(#)rlogin.c	5.10.1 (2.11BSD) 1997/3/28";
 #include <errno.h>
 #include <pwd.h>
 #include <signal.h>
+#include <string.h>
+#include <stdlib.h>
 #include <setjmp.h>
 #include <netdb.h>
 
@@ -35,8 +37,6 @@ static char sccsid[] = "@(#)rlogin.c	5.10.1 (2.11BSD) 1997/3/28";
 # define TIOCPKT_WINDOW 0x80
 # endif TIOCPKT_WINDOW
 
-char	*index(), *rindex(), *malloc(), *getenv();
-struct	passwd *getpwuid();
 char	*name;
 int	rem;
 char	cmdchar = '~';
@@ -46,21 +46,9 @@ char	*speeds[] =
     { "0", "50", "75", "110", "134", "150", "200", "300",
       "600", "1200", "1800", "2400", "4800", "9600", "19200", "38400" };
 char	term[256] = "network";
-extern	int errno;
 int	lostpeer();
 int	dosigwinch = 0;
-#ifndef sigmask
-#define sigmask(m)	(1L << ((m)-1))
-#endif
-#ifdef sun
-struct	ttysize winsize;
-struct winsize {
-	unsigned short ws_row, ws_col;
-	unsigned short ws_xpixel, ws_ypixel;
-};
-#else sun
 struct	winsize winsize;
-#endif sun
 int	sigwinch(), oob();
 
 main(argc, argv)
@@ -132,11 +120,7 @@ another:
 		strcat(term, "/");
 		strcat(term, speeds[ttyb.sg_ospeed]);
 	}
-#ifdef sun
-	(void) ioctl(0, TIOCGSIZE, &winsize);
-#else sun
 	(void) ioctl(0, TIOCGWINSZ, &winsize);
-#endif sun
 	signal(SIGPIPE, lostpeer);
 	signal(SIGURG, oob);
 	oldmask = sigblock(sigmask(SIGURG));
@@ -177,7 +161,6 @@ struct	ltchars noltc =	{ -1, -1, -1, -1, -1, -1 };
 doit(oldmask)
 	long oldmask;
 {
-	int exit();
 	struct sgttyb sb;
 
 	ioctl(0, TIOCGETP, (char *)&sb);
@@ -349,19 +332,6 @@ stop(cmdc)
 	sigwinch();			/* check for size changes */
 }
 
-#ifdef sun
-sigwinch()
-{
-	struct ttysize ws;
-
-	if (dosigwinch && ioctl(0, TIOCGSIZE, &ws) == 0 &&
-	    bcmp(&ws, &winsize, sizeof (ws))) {
-		winsize = ws;
-		sendwindow();
-	}
-}
-
-#else sun
 sigwinch()
 {
 	struct winsize ws;
@@ -372,7 +342,6 @@ sigwinch()
 		sendwindow();
 	}
 }
-#endif
 
 /*
  * Send the window size to the server via the magic escape
@@ -386,17 +355,10 @@ sendwindow()
 	obuf[1] = 0377;
 	obuf[2] = 's';
 	obuf[3] = 's';
-#ifdef sun
-	wp->ws_row = htons(winsize.ts_lines);
-	wp->ws_col = htons(winsize.ts_cols);
-	wp->ws_xpixel = 0;
-	wp->ws_ypixel = 0;
-#else sun
 	wp->ws_row = htons(winsize.ws_row);
 	wp->ws_col = htons(winsize.ws_col);
 	wp->ws_xpixel = htons(winsize.ws_xpixel);
 	wp->ws_ypixel = htons(winsize.ws_ypixel);
-#endif sun
 	(void) write(rem, obuf, sizeof(obuf));
 }
 
@@ -506,11 +468,7 @@ oob()
  */
 reader()
 {
-#if !defined(BSD) || BSD < 43
-	int pid = -getpid();
-#else
 	int pid = getpid();
-#endif
 	int n, remaining;
 	char *bufp = rcvbuf;
 

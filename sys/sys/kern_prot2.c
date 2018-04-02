@@ -35,7 +35,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)kern_prot2.c  8.9.2 (2.11BSD) 2000/2/20
+ *	@(#)kern_prot2.c  8.9.3 (2.11BSD) 2000/8/1
  */
 
 #include "param.h"
@@ -49,23 +49,11 @@
 
 int
 setuid()
-{
+	{
 	struct a {
 		uid_t uid;
 		} *uap = (struct a *)u.u_ap;
-
-	return(_setuid(uap->uid));
-	}
-
-/*
- * This is a helper function used by setuid() above and the 4.3BSD 
- * compatibility code.  When the latter goes away this can be joined
- * back into the above code and save a function call.
-*/
-int
-_setuid(uid)
-	register uid_t uid;
-	{
+	register uid_t uid = uap->uid;
 
 	if (uid != u.u_ruid && !suser())
 		return(u.u_error);
@@ -78,7 +66,7 @@ _setuid(uid)
         QUOTAMAP();
 	if (u.u_quota->q_uid != uid) {
 		qclean();
-		qstart(getquota((uid_t)uid, 0, 0));
+		qstart(getquota(uid, 0, 0));
 	}
 	QUOTAUNMAP();
 #endif
@@ -88,7 +76,7 @@ _setuid(uid)
 	u.u_ruid = uid;
 	u.u_svuid = uid;
 	u.u_acflag |= ASUGID;
-	return (u.u_error = 0);
+	return(u.u_error = 0);
 	}
 
 int
@@ -97,23 +85,16 @@ seteuid()
 	struct a {
 		uid_t euid;
 		} *uap = (struct a *)u.u_ap;
+	register uid_t euid = uap->euid;
 
-	return(_seteuid(uap->euid));
-	}
-
-int
-_seteuid(euid)
-	register uid_t euid;
-	{
-
-	if (euid != u.u_ruid && euid != u.u_svuid && !suser())
-		return (u.u_error);
+	if	(euid != u.u_ruid && euid != u.u_svuid && !suser())
+		return(u.u_error);
 	/*
 	 * Everything's okay, do it.
 	 */
 	u.u_uid = euid;
 	u.u_acflag |= ASUGID;
-	return (u.u_error = 0);
+	return(u.u_error = 0);
 	}
 
 int
@@ -122,22 +103,15 @@ setgid()
 	struct a {
 		gid_t gid;
 		} *uap = (struct a *)u.u_ap;
-	
-	return(_setgid(uap->gid));
-	}
-
-int 
-_setgid(gid)
-	register gid_t gid;
-	{
+	register gid_t	gid = uap->gid;
 
 	if (gid != u.u_rgid && !suser())
-		return (u.u_error);	/* XXX */
+		return(u.u_error);	/* XXX */
 	u.u_groups[0] = gid;		/* effective gid is u_groups[0] */
 	u.u_rgid = gid;
 	u.u_svgid = gid;
 	u.u_acflag |= ASUGID;
-	return (u.u_error = 0);
+	return(u.u_error = 0);
 	}
 
 int
@@ -146,18 +120,11 @@ setegid()
 	struct a {
 		gid_t egid;
 	} *uap = (struct a *)u.u_ap;
-
-	return(_setegid(uap->egid));
-	}
-
-int
-_setegid(egid)
-	register gid_t egid;
-	{
+	register gid_t egid = uap->egid;
 
 	if (egid != u.u_rgid && egid != u.u_svgid && !suser())
-		return (u.u_error);
+		return(u.u_error);
 	u.u_groups[0] = egid;
 	u.u_acflag |= ASUGID;
-	return (u.u_error = 0);
+	return(u.u_error = 0);
 	}

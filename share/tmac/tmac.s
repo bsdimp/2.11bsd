@@ -934,7 +934,9 @@
 .if \n(mo-9 .ds MO October
 .if \n(mo-10 .ds MO November
 .if \n(mo-11 .ds MO December
-.ds DY \*(MO \n(dy, 19\n(yr
+.nr *y \n(yr+1900
+.ds DY \*(MO \n(dy, \n(*y
+.ie
 .nr * 0 1
 .IZ
 .em EM

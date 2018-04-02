@@ -3,7 +3,7 @@
  * All rights reserved.  The Berkeley software License Agreement
  * specifies the terms and conditions for redistribution.
  *
- *	@(#)subr_prf.c	1.2 (2.11BSD) 1998/12/5
+ *	@(#)subr_prf.c	1.3 (2.11BSD) 2000/8/1
  */
 
 #include "param.h"
@@ -300,7 +300,7 @@ tablefull(tab)
  * about failing disk tranfers.
  */
 harderr(bp, cp)
-	struct buf *bp;
+	register struct buf *bp;
 	char *cp;
 {
 	printf("%s%d%c: hard error sn%D ", cp,

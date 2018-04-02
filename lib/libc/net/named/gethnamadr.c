@@ -11,8 +11,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)gethostnamadr.c	6.31.2 (2.11BSD GTE) 6/27/94";
-#endif /* LIBC_SCCS and not lint */
+static char sccsid[] = "@(#)gethostnamadr.c	6.31.3 (2.11BSD) 2000/5/17";
+#endif
 
 #include <sys/param.h>
 #include <sys/socket.h>
@@ -112,9 +112,7 @@ getanswer(answer, anslen, iquery)
 	ap = host_aliases;
 	host.h_aliases = host_aliases;
 	hap = h_addr_ptrs;
-#if BSD >= 43 || defined(h_addr)	/* new-style hostent structure */
 	host.h_addr_list = h_addr_ptrs;
-#endif
 	haveanswer = 0;
 	while (--ancount >= 0 && cp < eom) {
 		if ((n = dn_expand((char *)answer->buf, eom, cp, bp, buflen)) < 0)
@@ -190,11 +188,7 @@ getanswer(answer, anslen, iquery)
 	}
 	if (haveanswer) {
 		*ap = NULL;
-#if BSD >= 43 || defined(h_addr)	/* new-style hostent structure */
 		*hap = NULL;
-#else
-		host.h_addr = h_addr_ptrs[0];
-#endif
 		return (&host);
 	} else {
 		h_errno = TRY_AGAIN;
@@ -320,9 +314,7 @@ again:
 		goto again;
 	*cp++ = '\0';
 	/* THIS STUFF IS INTERNET SPECIFIC */
-#if BSD >= 43 || defined(h_addr)	/* new-style hostent structure */
 	host.h_addr_list = host_addrs;
-#endif
 	host.h_addr = hostaddr;
 	*((u_long *)host.h_addr) = inet_addr(p);
 	host.h_length = sizeof (u_long);

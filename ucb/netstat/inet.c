@@ -11,7 +11,7 @@
  */
 
 #if	defined(DOSCCS) && !defined(lint)
-static char sccsid[] = "@(#)inet.c	5.9.3 (2.11BSD GTE) 8/28/94";
+static char sccsid[] = "@(#)inet.c	5.9.4 (2.11BSD) 2000/5/17";
 #endif
 
 #include <strings.h>
@@ -243,17 +243,14 @@ ip_stats(off, name)
 		return;
 	klseek(kmem, off, 0);
 	read(kmem, (char *)&ipstat, sizeof (ipstat));
-#if BSD>=43
 	printf("%s:\n\t%lu total packets received\n", name,
 		ipstat.ips_total);
-#endif
 	printf("\t%lu bad header checksum%s\n",
 		ipstat.ips_badsum, plural(ipstat.ips_badsum));
 	printf("\t%lu with size smaller than minimum\n", ipstat.ips_toosmall);
 	printf("\t%lu with data size < data length\n", ipstat.ips_tooshort);
 	printf("\t%lu with header length < data size\n", ipstat.ips_badhlen);
 	printf("\t%lu with data length < header length\n", ipstat.ips_badlen);
-#if BSD>=43
 	printf("\t%lu fragment%s received\n",
 		ipstat.ips_fragments, plural(ipstat.ips_fragments));
 	printf("\t%lu fragment%s dropped (dup or out of space)\n",
@@ -266,7 +263,6 @@ ip_stats(off, name)
 		ipstat.ips_cantforward, plural(ipstat.ips_cantforward));
 	printf("\t%lu redirect%s sent\n",
 		ipstat.ips_redirectsent, plural(ipstat.ips_redirectsent));
-#endif
 }
 
 static	char *icmpnames[] = {

@@ -298,7 +298,12 @@ racmd:
 	clr	(r0)			/ Tell controller we go it
 	rts	pc
 
-icons:	RAERR
+/ Some adaptors (TD Systems Viking for example) require the vector field
+/  to be initialized even though interrupts are not enabled.  Use the primary
+/  vector of 0154.   The standalone MSCP driver does the same thing and later on
+/  the  kernel programs the adaptor with an assigned vector
+
+icons:	RAERR + 033			/ 033 = 0154 >> 2
 	ra+RARING
 	0
 	RAGO

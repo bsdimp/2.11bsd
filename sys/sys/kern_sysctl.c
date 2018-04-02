@@ -33,7 +33,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)kern_sysctl.c	8.4.11 (2.11BSD) 1999/8/11
+ *	@(#)kern_sysctl.c	8.4.12 (2.11BSD) 2000/5/17
  */
 
 /*
@@ -195,10 +195,10 @@ kern_sysctl(name, namelen, oldp, oldlenp, newp, newlen)
 
 	switch (name[0]) {
 	case KERN_OSTYPE:
+		bsd[0]='B';bsd[1]='S';bsd[2]='D';bsd[3]='\0';
+		return (sysctl_rdstring(oldp, oldlenp, newp, bsd));
 	case KERN_OSRELEASE:
-		/* code is cheaper than D space */
-		bsd[0]='2';bsd[1]='.';bsd[2]='1';bsd[3]='1';bsd[4]='B';
-		bsd[5]='S';bsd[6]='D';bsd[7]='\0';
+		bsd[0]='2';bsd[1]='.';bsd[2]='1';bsd[3]='1';bsd[4]='\0';
 		return (sysctl_rdstring(oldp, oldlenp, newp, bsd));
 	case KERN_ACCTTHRESH:
 		level = Acctthresh;

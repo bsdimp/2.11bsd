@@ -9,7 +9,7 @@
  * software without specific prior written permission. This software
  * is provided ``as is'' without express or implied warranty.
  *
- *	@(#)raw_ip.c	7.3 (Berkeley) 12/7/87
+ *	@(#)raw_ip.c	7.3.1 (2.11BSD) 2000/5/17
  */
 
 #include "param.h"
@@ -61,11 +61,8 @@ rip_output(m, so)
 	int error;
 	struct rawcb *rp = sotorawcb(so);
 	struct sockaddr_in *sin;
-#if BSD>=43
 	short proto = rp->rcb_proto.sp_protocol;
-#else
-	short proto = so->so_proto->pr_protocol;
-#endif
+
 	/*
 	 * if the protocol is IPPROTO_RAW, the user handed us a 
 	 * complete IP packet.  Otherwise, allocate an mbuf for a
@@ -113,13 +110,8 @@ rip_output(m, so)
 
 	ip->ip_dst = ((struct sockaddr_in *)&rp->rcb_faddr)->sin_addr;
 
-#if BSD>=43
 	return (ip_output(m, rp->rcb_options, &rp->rcb_route, 
 	   (so->so_options & SO_DONTROUTE) | IP_ALLOWBROADCAST));
-#else
-	return (ip_output(m, (struct mbuf *)0, &rp->rcb_route, 
-	   (so->so_options & SO_DONTROUTE) | IP_ALLOWBROADCAST));
-#endif
 bad:
 	m_freem(m);
 	return (error);
