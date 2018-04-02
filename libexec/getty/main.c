@@ -9,7 +9,7 @@ char copyright[] =
 "@(#) Copyright (c) 1980 Regents of the University of California.\n\
  All rights reserved.\n";
 
-static char sccsid[] = "@(#)main.c	5.5.1 (2.11BSD GTE) 12/9/94";
+static char sccsid[] = "@(#)main.c	5.5.2 (2.11BSD) 2003/2/10";
 #endif
 
 /*
@@ -383,9 +383,18 @@ putchr(cc)
 	char c;
 
 	c = cc;
-	c |= partab[c&0177] & 0200;
-	if (OP)
-		c ^= 0200;
+/*
+ * If "any" parity do nothing otherwise set even parity unless OP is
+ * set.  Since 'ap' is set in the "default" entry of /etc/gettytab this
+ * has the effect of disabling parity on output without having to change
+ * the kernel.
+*/
+	if (!AP) {
+	   c |= partab[c & 0177] & 0200;
+	   if (OP)
+	      c ^= 0200;
+	}
+
 	if (!UB) {
 		outbuf[obufcnt++] = c;
 		if (obufcnt >= OBUFSIZ)
