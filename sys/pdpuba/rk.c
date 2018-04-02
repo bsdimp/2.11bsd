@@ -43,6 +43,13 @@ static	int		rk_dkn = -1;	/* number for iostat */
 					*/
 #endif
 
+/* added rkroot() to support RK11 based systems (2008-12-14,wfjm) */
+
+rkroot()
+{
+	rkattach((struct rkdevice *)0177400, 0);
+}
+
 rkattach(addr, unit)
 struct rkdevice *addr;
 {

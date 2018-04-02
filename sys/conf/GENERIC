@@ -52,8 +52,9 @@ BOOTDEV		NONE			# don't autoboot
 #BOOTDEV	hk6			# rk06 boot device
 #BOOTDEV	hk7			# rk07 boot device
 #BOOTDEV	ra			# MSCP boot device
+#BOOTDEV	rk			# rk05 boot device
 #BOOTDEV	rl			# rl01/02 boot device
-#BOOTDEV	rm			# rm02/03/05 boot device
+#BOOTDEV	rm			# rm02/03/05 rp06 boot device
 #BOOTDEV	br			# Eaton BR1537/BR1711 boot device
 #BOOTDEV	sc11			# Emulex SC11/B boot device
 #BOOTDEV	sc21			# Emulex SC21 boot device

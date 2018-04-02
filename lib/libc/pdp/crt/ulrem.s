@@ -6,6 +6,7 @@
  *  Version	Date		Modification
  *	0.0	02Feb91		1. Initial inspiration struck.
  *	1.0	05Jun93		2. Released into the Public Domain.
+ *      1.1     23Dec08         Revised, corrected KERNEL (no-FPP) code wfjm
 */
 
 #include "DEFS.h"
@@ -56,7 +57,49 @@ ENTRY(ulrem)
 #else
 /*
  * ulrem for the kernel (uses only fixed point - no FP)
+ *
+ * uses lrem if lhs and rhs non-negative, otherwise reminder is calculated
+ * 'brute-force' via lhs-(lhs/rhs)*rhs using uldiv and lmul. (wfjm)
 */
+
+	.globl	ulrem
+	.globl	lrem, uldiv, lmul
+ulrem:
+ENTRY(ulrem)
+	tst	2(sp)		/ hi(lhs)
+	bmi	1f		/ if negative, a-(a/b)*b handling
+	tst	6(sp)		/ hi(rhs)
+	bmi	1f		/ if negative, a-(a/b)*b handling
+	jmp	lrem		/ if lhs and rhs >=0, use lrem
+
+1:	mov	r5,-(sp)	/ need frame pointer
+	mov	sp,r5		/ setup frame pointer
+	mov	12(r5),-(sp)	/ lo(rhs) for *
+	mov	10(r5),-(sp)	/ hi(rhs)
+	mov	12(r5),-(sp)	/ lo(rhs) for /
+	mov	10(r5),-(sp)	/ hi(rhs)
+	mov	6(r5),-(sp)	/ lo(lhs) for /
+	mov	4(r5),-(sp)	/ hi(lhs)
+	jsr	pc,uldiv	/ do lhs/rhs
+	add	$10,sp		/ clean up stack
+	mov	r1,-(sp)	/ lo(lhs/rhs)
+	mov	r0,-(sp)	/ hi(lhs/rhs)
+	jsr	pc,lmul		/ do (lhs/rhs)*rhs
+	add	$10,sp		/ clean up stack
+	mov	r1,-(sp)	/ lo((lhs/rhs)*rhs))
+	mov	r0,-(sp)	/ hi((lhs/rhs)*rhs))
+	mov	6(r5),r1	/ lo(lhs)
+	mov	4(r5),r0	/ hi(lhs)
+	sub	(sp)+,r0	/ hi(lhs-((lhs/rhs)*rhs))
+	sub	(sp)+,r1	/ lo(lhs-((lhs/rhs)*rhs))
+	sbc	r0		/ handle carry from lo to hi part
+	mov	(sp)+,r5	/ restore r5
+	rts	pc
+
+#ifdef NEVER
+/* the old code here for reference and further debugging.
+ * a 1%10 produced a 0 instead of a 1.
+ */ 
 	.globl ulrem
 ulrem:
 ENTRY(ulrem)
@@ -131,6 +174,7 @@ noadd1:
 	mov	(sp)+,r3
 	mov	(sp)+,r2
 	rts	pc
+#endif NEVER
 #endif KERNEL
 
 /*

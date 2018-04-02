@@ -50,7 +50,7 @@ hardboot:
 /  Otherwise, use a BOOT opcode, if available;
 /  if necessary, read in block 0 to location 0 "by hand".
 
-/ rm02/3/5 bootstrap - salkind@nyu
+/ rm02/3/5 rp06 bootstrap - salkind@nyu
 
 WC	= -256.
 READ	= 70

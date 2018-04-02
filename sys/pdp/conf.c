@@ -23,12 +23,13 @@ int	rawrw();
 
 #include "rk.h"
 #if NRK > 0
-int	rkopen(), rkstrategy();
+int	rkopen(), rkroot(), rkstrategy();
 daddr_t	rksize();
 #define	rkclose		nulldev
 #else
 #define	rkopen		nodev
 #define	rkclose		nodev
+#define rkroot		nulldev
 #define	rkstrategy	nodev
 #define	rksize		NULL
 #endif
@@ -192,7 +193,7 @@ struct bdevsw	bdevsw[] = {
 	raopen,		raclose,	rastrategy,	raroot,		rasize,
 	0,
 /* rk = 6 */
-	rkopen,		rkclose,	rkstrategy,	nulldev,	rksize,
+	rkopen,		rkclose,	rkstrategy,	rkroot,		rksize,
 	0,
 /* rl = 7 */
 	rlopen,		rlclose,	rlstrategy,	rlroot,		rlsize,

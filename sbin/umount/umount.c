@@ -67,7 +67,7 @@ main(argc, argv)
 	int argc;
 	register char *argv[];
 {
-	int all, ch, errs;
+	int all, ch, errs=0;
 
 	/* Start disks transferring immediately. */
 	sync();
@@ -108,7 +108,7 @@ main(argc, argv)
 		errs = umountall();
 	} else
 		for (errs = 0; *argv != NULL; ++argv)
-			if (umountfs(*argv) == 0)
+			if (umountfs(*argv) != 0)
 				errs = 1;
 	exit(errs);
 }

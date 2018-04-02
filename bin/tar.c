@@ -55,7 +55,7 @@ struct linkbuf {
 	ino_t	inum;
 	dev_t	devnum;
 	int	count;
-	char	pathname[NAMSIZ];
+	char	*pathname;
 	struct	linkbuf *nextp;
 };
 
@@ -604,12 +604,15 @@ putfile(longname, shortname, parent)
 			}
 			lp = (struct linkbuf *) getmem(sizeof(*lp));
 			if (lp != NULL) {
-				lp->nextp = ihead;
-				ihead = lp;
-				lp->inum = stbuf.st_ino;
-				lp->devnum = stbuf.st_dev;
-				lp->count = stbuf.st_nlink - 1;
-				strcpy(lp->pathname, longname);
+				lp->pathname = getmem(strlen(longname)+1);
+				if (lp->pathname != NULL) {
+					lp->nextp = ihead;
+					ihead = lp;
+					lp->inum = stbuf.st_ino;
+					lp->devnum = stbuf.st_dev;
+					lp->count = stbuf.st_nlink - 1;
+					strcpy(lp->pathname, longname);
+				}
 			}
 		}
 		blocks = (stbuf.st_size + (TBLOCK-1)) / TBLOCK;
