@@ -17,7 +17,7 @@
  *	RIGHTS, APPROPRIATE COPYRIGHT LEGENDS MAY BE PLACED ON THE
  *	DERIVATIVE WORK IN ADDITION TO THAT SET FORTH ABOVE.
  *
- *	@(#)mch_fpsim.s	1.2 (2.11BSD GTE) 12/26/92
+ *	@(#)mch_fpsim.s	1.3 (2.11BSD) 2006/12/26
  */
 #include "DEFS.h"
 
@@ -226,8 +226,8 @@ ret:
 1:
 	movb	(r3)+,r2
 	asl	r2
-	add	uar0,r0
-	mov	(r1)+,(r0)
+	add	uar0,r2
+	mov	(r1)+,(r2)
 	sob	r4,1b	
 
 	bit	$020,sps(r5)	/ Check to see if T bit was set.
