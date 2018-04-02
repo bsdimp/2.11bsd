@@ -1,6 +1,6 @@
-.\"	@(#)getenv.3	6.4 (Berkeley) 3/20/87
+.\"	@(#)getenv.3	6.4.1 (2.11BSD) 2001/2/22
 .\"
-.TH GETENV 3 "March 20, 1987"
+.TH GETENV 3 "February 22, 2001"
 .AT 3
 .SH NAME
 getenv, setenv, unsetenv \- manipulate environmental variables
@@ -10,7 +10,7 @@ getenv, setenv, unsetenv \- manipulate environmental variables
 .B char *name;
 .PP
 .B setenv(name, value, overwrite)
-.B char *name, value;
+.B char *name, *value;
 .B int overwrite;
 .PP
 .B void unsetenv(name)

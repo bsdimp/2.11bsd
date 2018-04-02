@@ -20,7 +20,7 @@ char copyright[] =
 "@(#) Copyright (c) 1985, 1988 Regents of the University of California.\n\
  All rights reserved.\n";
 
-static char sccsid[] = "@(#)ftpd.c	5.28.2	(2.11BSD) 1996/3/22";
+static char sccsid[] = "@(#)ftpd.c	5.28.3	(2.11BSD) 2001/4/26";
 #endif
 
 /*
@@ -476,7 +476,7 @@ pass(passwd)
 		sprintf(proctitle, "%s: anonymous/%.*s", remotehost,
 		    sizeof(proctitle) - sizeof(remotehost) -
 		    sizeof(": anonymous/"), passwd);
-		setproctitle(proctitle);
+		setproctitle("%s", proctitle);
 #endif /* SETPROCTITLE */
 		if (logging)
 			syslog(LOG_INFO, "ANONYMOUS FTP LOGIN FROM %s, %s",
@@ -485,7 +485,7 @@ pass(passwd)
 		reply(230, "User %s logged in.", pw->pw_name);
 #ifdef SETPROCTITLE
 		sprintf(proctitle, "%s: %s", remotehost, pw->pw_name);
-		setproctitle(proctitle);
+		setproctitle("%s", proctitle);
 #endif /* SETPROCTITLE */
 		if (logging)
 			syslog(LOG_INFO, "FTP LOGIN FROM %s, %s",
@@ -1133,7 +1133,7 @@ dolog(sin)
 		    sizeof (remotehost));
 #ifdef SETPROCTITLE
 	sprintf(proctitle, "%s: connected", remotehost);
-	setproctitle(proctitle);
+	setproctitle("%s", proctitle);
 #endif /* SETPROCTITLE */
 
 	if (logging) {

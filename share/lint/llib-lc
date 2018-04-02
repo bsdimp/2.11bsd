@@ -1,4 +1,4 @@
-/*	@(#)llib-lc	1.47 (2.11BSD) 1999/9/9 */
+/*	@(#)llib-lc	1.48 (2.11BSD) 2001/2/22 */
 
 /* LINTLIBRARY */
 
@@ -345,7 +345,7 @@ int	scandir(d, n, s, c) char *d; struct direct *(*n[]); int (*s)(),(*c)();
 		{ return 1; }
 void	seekdir( p, l) DIR *p; long l; {}
 int	setegid(egid) gid_t egid; { return 0; }
-int	setenv(n, v, o) char *n, v; { return 0; }
+int	setenv(n, v, o) char *n, *v; { return 0; }
 int	seteuid(euid) uid_t euid; { return 0; }
 
 int	setfsent() { return 0; }
