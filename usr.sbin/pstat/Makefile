@@ -24,7 +24,7 @@ clean:
 depend: ${SRCS}
 	mkdep ${CFLAGS} ${SRCS}
 
-install: pstat
+install: pstat ${MAN}
 	install -c -o bin -g bin -m 444 ${MAN} ${DESTDIR}/usr/man/cat8
 	install -s -o bin -g kmem -m 2755 pstat ${DESTDIR}/usr/sbin/pstat
 

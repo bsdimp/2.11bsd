@@ -2034,13 +2034,14 @@ BSD resource limit functions.
 %k	The number of signals received.
 %w	Number of voluntary context switches (waits).
 %c	Number of involuntary context switches.
+%V	Number of user mode overlay changes (2BSD only).
 .RE
 .DT
 .fi
 .sp
 The default time format is "%Uu %Ss %E %P %X+%Dk %I+%Oio %Fpf+%Ww" for
 systems that support resource usage reporting and "%Uu %Ss %E %P" for
-systems that do not.
+systems that do not. On 2BSD the default is "%Uu %Ss %E %P %I+%Oio %Vov %Wsw".
 .PP
 For Sequent's DYNIX/ptx %X, %D, %K, %r and %s are not supported.
 However, the following additional sequences are available.

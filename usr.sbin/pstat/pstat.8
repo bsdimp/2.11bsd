@@ -4,13 +4,13 @@
 .\"
 .\"	@(#)pstat.8	6.3.2 (2.11BSD) 1997/9/2
 .\"
-.TH PSTAT 8 "September 2, 1997"
+.TH PSTAT 8 "December 28, 2008"
 .UC 4
 .SH NAME
 pstat \- print system facts
 .SH SYNOPSIS
 .B /usr/sbin/pstat
-.B \-aixptufT
+.B \-aixptufbcmsT
 [
 .B suboptions
 ] [
@@ -116,7 +116,6 @@ wanted (L flag is on)
 resulted from demand-page-from-inode exec format (see
 .IR execve (2))
 .RE
-.PD
 .IP DADDR
 Disk address in swap, measured in multiples of 512 bytes.
 .IP CADDR
@@ -326,12 +325,83 @@ The location of the inode table entry or socket structure for this file.
 The file offset (see
 .IR lseek (2)).
 .PD
-.PP
+.TP
+.B \-b
+Print the buffer pool table with the these headings:
+.IP IND
+Index of buffer descriptor
+.PD 0
+.IP LOC
+Memory address of buffer descriptor
+.IP FLAGS
+Miscellaneous state variables encoded thus:
+.RS
+.IP R
+B_READ: read when I/O occurs
+.IP D
+B_DONE: transaction finished
+.IP E
+B_ERROR: transaction aborted
+.IP B
+B_BUSY: not on av_forw/back list
+.IP P
+B_PHYS: physical IO
+.IP M
+B_MAP: alloc UNIBUS
+.IP W
+B_WANTED: issue wakeup when BUSY goes off
+.IP A
+B_AGE: delayed write for correct aging
+.IP a
+B_ASYNC: don't wait for I/O completion
+.IP d
+B_DELWRI: write at exit of avail list
+.IP T
+B_TAPE: this is a magtape (no bdwrite)
+.IP I
+B_INVAL: does not contain valid info
+.IP b
+B_BAD: bad block revectoring in progress
+.IP L
+B_LOCKED: locked in core (not reusable)
+.IP u
+B_UBAREMAP: addr UNIBUS virtual, not physical
+.IP r
+B_RAMREMAP: remapped into ramdisk
+.RE
+.IP FORW
+Hash chain forward link (as index)
+.IP BACKW
+Hash chain backward link (as index)
+.IP AFORW
+Alternate chain forward link (as index)
+.IP ABACKW
+Alternate chain backward link (as index)
+.IP DEVICE
+Device major, minor number
+.IP BLKNO
+Logical block number on device
+.PD
+.TP
 .B \-s
-print information about swap space usage: the number of (1k byte) pages used
-and free is given as well as the number of used pages which belong
-to text images.
-.PP
+print the swapmap and a summary on swap space usage.
+The summary gives the number of used and available swapmap entries,
+the total amount of allocated and free swap space in kByte,
+and the size of the largest free swapspace segment.
+.PD
+.TP
+.B \-c
+print the coremap and a summary on free memory areas.
+The summary gives the number of used and available coremap entries as
+well as the total amount and size largest segment of free memory in kBytes.
+.PD
+.TP
+.B \-m
+print the ub_map, describing free UNIBUS mapping registers, and 
+a summary on free mapping registers.
+The summary gives the number of used and available ub_map entries as well
+as the total amount and size largest segment of free registers.
+.TP
 .B \-T
 prints the number of used and free slots in the several system tables
 and is useful for checking to see how full system tables have become if the

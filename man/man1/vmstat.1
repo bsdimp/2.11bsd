@@ -4,7 +4,7 @@
 .\"
 .\"	@(#)vmstat.1	6.3 (Berkeley) 3/15/86
 .\"
-.TH VMSTAT 1 "March 15, 1986"
+.TH VMSTAT 1 "December 30, 2006"
 .UC 4
 .de s1
 .if n .sp
@@ -15,11 +15,11 @@
 .if t .ta 1i
 ..
 .SH NAME
-vmstat \- report virtual memory statistics
+vmstat \- report virtual memory statistics (2.11BSD)
 .SH SYNOPSIS
 .B vmstat
 [
-.B \-fsi
+.B \-fsip
 ]
 [ drives ]
 [ interval [ count ] ]
@@ -52,6 +52,10 @@ If none of these options are given,
 .I vmstat
 will report in the first line a summary of the virtual memory activity 
 since the system has been booted.
+If given a
+.B \-p
+argument, a different set of information is shown with additional pdp11
+specific fields.
 If
 .I interval
 is specified, then successive lines are summaries over the last
@@ -81,45 +85,57 @@ w	runnable or short sleeper (< 20 secs) but swapped
 Memory: information about the usage of virtual and real memory.
 Virtual pages are considered active if they belong to processes which
 are running or have run in the last 20 seconds.
-A ``page'' here is 1024 bytes.
+A ``page'' here is a disk block of 1024 bytes.
 .s1
 .t1
 .nf
-avm	active virtual pages
+avm	active virtual memory
+tx	fraction of active virtual memory used by text  (\-p only)
 fre	size of the free list
 .fi
 .s1
-Page: information about page faults and paging activity.
+Page: information about text table and swaping activity.
 These are averaged each five seconds, and given in units per second.
 .s1
 .t1
 .nf
-re	page reclaims (simulating reference bits)
-at	pages attached (found in free list)
-pi	pages paged in
-po	pages paged out
-fr	pages freed per second
-de	anticipated short term memory shortfall
-sr	pages scanned by clock algorithm, per-second
+ti	text table entries found in use/sticky
+tc	text table entries found in cache
+pi	pages swapped in
+po	pages swapped out
+fr	text table entries freed
+fc	text table entries placed in cache
+ov	user mode overlay changes
 .fi
 .s1
-up/hp/rk/ra: Disk operations per second (this field is system dependent).
-Typically paging will be split across several of the available drives.
+Swap: information about swaping activity (\-p only)
+.sl
+.tl
+.nf
+i	process swap in rate
+o	process swap out rate
+.fi
+.sl
+Disks: Disk I/O rates in kbytes/sec.
 The number under each of these is the unit number.
 .s1
-Faults: trap/interrupt rate averages per second over last 5 seconds.
+System: various rate averages per second over last 5 seconds.
 .s1
 .t1
 .nf
+pd	pseudo-dma interrupts (\-p only)
 in	(non clock) device interrupts per second
 sy	system calls per second
+tr	traps/faults per second (\-p only)
+ov	user mode overlay changes (\-p only)
 cs	cpu context switch rate (switches/sec)
 .fi
 .s1
 Cpu: breakdown of percentage usage of CPU time
 .s1
 .nf
-us	user time for normal and low priority processes
+us	user time for normal processes (includes nice time if no \-p)
+ni	user time for low priority processes (\-p only)
 sy	system time
 id	cpu idle
 .fi

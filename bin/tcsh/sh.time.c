@@ -174,6 +174,9 @@ ruadd(ru, ru2)
     ru->ru_isrss += ru2->ru_isrss;
     ru->ru_minflt += ru2->ru_minflt;
     ru->ru_majflt += ru2->ru_majflt;
+#ifdef pdp11
+    ru->ru_ovly += ru2->ru_ovly;
+#endif
     ru->ru_nswap += ru2->ru_nswap;
     ru->ru_inblock += ru2->ru_inblock;
     ru->ru_oublock += ru2->ru_oublock;
@@ -567,7 +570,9 @@ pdeltat(t1, t0)
     tmval_t td;
 
     tvsub(&td, t1, t0);
-    xprintf("%d.%01d", td.tv_sec, td.tv_usec / 100000);
+    xprintf("%ld",td.tv_sec);
+    xprintf(".");
+    xprintf("%ld",td.tv_usec / 100000);
 }
 
 void

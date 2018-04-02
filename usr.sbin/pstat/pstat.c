@@ -2,6 +2,7 @@
  * Copyright (c) 1980 Regents of the University of California.
  * All rights reserved.  The Berkeley software License Agreement
  * specifies the terms and conditions for redistribution.
+ *
  */
 
 #if	!defined(lint) && defined(DOSCCS)
@@ -24,6 +25,7 @@ static char sccsid[] = "@(#)pstat.c	5.8.6 (2.11BSD) 1999/9/13";
 #undef	KERNEL
 #include <sys/proc.h>
 #include <sys/text.h>
+#include <sys/buf.h>
 #include <sys/inode.h>
 #include <sys/map.h>
 #include <sys/ioctl.h>
@@ -83,6 +85,14 @@ struct nlist nl[] = {
 	{ "_dhv_tty" },
 #define	SNDHV	21
 	{ "_ndhv" },
+#define SCOREMAP 22
+	{ "_coremap" },
+#define SNBUF	23
+	{ "_nbuf" },
+#define SBUF 24
+	{ "_buf" },
+#define SUBMAP 25
+	{ "_ub_map" },
 	{ "" }
 };
 
@@ -94,6 +104,9 @@ int	usrf;
 long	ubase;
 int	filf;
 int	swpf;
+int	coref;
+int	buff;
+int	ubmapf;
 int	totflg;
 int	allflg;
 int	kflg;
@@ -156,6 +169,16 @@ char **argv;
 		case 's':
 			swpf++;
 			break;
+			break;
+		case 'c':
+			coref++;
+			break;
+		case 'm':
+			ubmapf++;
+			break;
+		case 'b':
+			buff++;
+			break;
 		default:
 			usage();
 			exit(1);
@@ -180,9 +203,10 @@ char **argv;
 		printf("no namelist, n_type: %d n_value: %o n_name: %s\n", nl[0].n_type, nl[0].n_value, nl[0].n_name);
 		exit(1);
 	}
-	allflags = filf | totflg | inof | prcf | txtf | ttyf | usrf | swpf;
+	allflags = filf | totflg | inof | prcf | txtf | ttyf | usrf |
+			 swpf | coref | ubmapf | buff;
 	if (allflags == 0) {
-		printf("pstat: one or more of -[aixptfsu] is required\n");
+		printf("pstat: one or more of -[aixptfscmbuT] is required\n");
 		exit(1);
 	}
 	if (filf||totflg)
@@ -198,13 +222,21 @@ char **argv;
 	if (usrf)
 		dousr();
 	if (swpf||totflg)
-		doswap();
+		domap(swpf, SWAPMAP);
+	if (coref||totflg)
+		domap(coref, SCOREMAP);
+	if (ubmapf||totflg)
+		domap(ubmapf, SUBMAP);
+	if (buff||totflg)
+		dobuf();
+
+	exit(0);
 }
 
 usage()
 {
 
-	printf("usage: pstat -[aixptfs] [-u [ubase]] [system] [core]\n");
+	printf("usage: pstat -[aixptfscmbT] [-u [ubase]] [system] [core]\n");
 }
 
 doinode()
@@ -752,22 +784,158 @@ dofile()
 	free(xfile);
 }
 
-doswap()
-{
-	u_int	nswap, used;
-	int	i, num;
-	struct	map	smap;
-	struct	mapent	*swp;
+/* 
+ * common function to handle -s, -c and -m: swapmap, coremap and ub_map. 
+ * 2008-12-30 - wfjm 
+*/
 
-	nswap = getw((off_t)nl[SNSWAP].n_value);
-	lseek(fc, (off_t)nl[SWAPMAP].n_value, 0);
-	read(fc, &smap, sizeof (smap));
-	num = (smap.m_limit - smap.m_map);
-	swp = (struct mapent *)calloc(num, sizeof (*swp));
-	lseek(fc, (off_t)smap.m_map, 0);
-	read(fc, swp, num * sizeof (*swp));
-	for	(used = 0, i = 0; swp[i].m_size; i++)
-		used += swp[i].m_size;
-	printf("%d/%d swapmap entries\n", i, num);
-	printf("%u kbytes swap used, %u kbytes free\n", (nswap-used)/2, used/2);
+domap(flag, nlind)
+int flag;
+int nlind;
+{
+	size_t	nswap, size, freetot, freemax;
+	int	i, num, mshift;
+	struct	map	maphdr;
+	struct	mapent	*maptbl;
+	char	*name;
+
+	switch(nlind) {
+	case SWAPMAP:
+		name = "swapmap";
+		mshift = -1;	/* disk blocks -> kBytes */
+		break;
+	case SCOREMAP:
+		name = "coremap";
+		mshift = -4;	/* clocks -> kBytes */
+		break;
+	case SUBMAP:
+		name = "ub_map";
+		mshift = 3;	/* ubmap pages -> kBytes */
+		break;
+	default:
+		return;
+	}
+
+	if (nl[nlind].n_type == 0) return;
+
+	lseek(fc, (off_t)nl[nlind].n_value, 0);
+	read(fc, &maphdr, sizeof (maphdr));
+
+	num = (maphdr.m_limit - maphdr.m_map);
+	maptbl = (struct mapent *)calloc(num, sizeof (*maptbl));
+	if (maptbl == NULL) {
+		fprintf(stderr, "can't allocate memory for %s table\n", name);
+		return;
+	}
+
+	lseek(fc, (off_t)maphdr.m_map, 0);
+	read(fc, maptbl, num * sizeof (*maptbl));
+
+
+	if (flag) printf("   ADDR   SIZE     kB\n");	
+	for	(freetot = 0, freemax = 0, i = 0; maptbl[i].m_size; i++)
+	{
+		size = maptbl[i].m_size;
+		freetot += size;
+		if (size>freemax) freemax = size;
+		if(flag) {
+			printf("%7.1o %6u %6u\n",
+				maptbl[i].m_addr, size, size<<mshift);
+		}
+	}
+
+	printf("%3d/%3d %7s entries, ", i, num, name);
+
+	switch(nlind) {
+	case SWAPMAP:
+		nswap = getw((off_t)nl[SNSWAP].n_value);
+		printf("%4u kB used, %4u kB free, %4u kB max\n",
+		       (nswap-freetot)/2, freetot/2, freemax/2);
+		break;
+	case SCOREMAP:
+		printf("%4u kB free, %4u kB max\n", 
+			freetot/16, freemax/16);
+		break;
+	case SUBMAP:
+		printf("%4u    free, %4u    max\n", 
+			freetot, freemax);
+		break;
+	}
+
+	free(maptbl);
 }
+
+dobuf()
+{
+	register struct buf *bp;
+	int nbuf;
+	struct buf *xbuf;
+	u_int abuf, abufe;
+	u_long l_baddr;
+	int i;
+	
+	nbuf = getw((off_t)nl[SNBUF].n_value);
+	if (nbuf <= 0 || nbuf >= 2000) {
+		fprintf(stderr, "number of buffers is preposterous (%d)\n",
+			nbuf);
+		return;
+	}
+
+	xbuf = (struct buf *) calloc(nbuf, sizeof (struct buf));
+	if (xbuf == NULL) {
+		fprintf(stderr, "can't allocate memory for buf table\n");
+		return;
+	}
+
+	abuf = nl[SBUF].n_value;
+	lseek(fc, (off_t)abuf, 0);
+	read(fc, xbuf, nbuf * sizeof (struct buf));
+	abufe = abuf + nbuf * sizeof (struct buf);
+
+	if (buff) {
+		printf("IND    LOC       FLAGS         ");
+		printf("FORW   BACKW   AFORW  ABACKW   DEVICE   BLKNO\n");
+
+		for (bp=xbuf, i=0; bp<&xbuf[nbuf]; bp++, i++) {
+			printf("%3d ", i);
+			printf("%7.1o ", abuf + (bp - xbuf)*sizeof(*bp));
+			putf((long)bp->b_flags&B_READ,   'R');
+			putf((long)bp->b_flags&B_DONE,   'D');
+			putf((long)bp->b_flags&B_ERROR,  'E');
+			putf((long)bp->b_flags&B_BUSY,   'B');
+			putf((long)bp->b_flags&B_PHYS,   'P');
+			putf((long)bp->b_flags&B_MAP,    'M');
+			putf((long)bp->b_flags&B_WANTED, 'W');
+			putf((long)bp->b_flags&B_AGE,    'A');
+			putf((long)bp->b_flags&B_ASYNC,  'a');
+			putf((long)bp->b_flags&B_DELWRI, 'd');
+			putf((long)bp->b_flags&B_TAPE,   'T');
+			putf((long)bp->b_flags&B_INVAL,  'I');
+			putf((long)bp->b_flags&B_BAD,    'b');
+			putf((long)bp->b_flags&B_LOCKED, 'L');
+			putf((long)bp->b_flags&B_UBAREMAP,'u');
+			putf((long)bp->b_flags&B_RAMREMAP,'r');
+			pbufbp(abuf, abufe, bp->b_forw);
+			pbufbp(abuf, abufe, bp->b_back);
+			pbufbp(abuf, abufe, bp->av_forw);
+			pbufbp(abuf, abufe, bp->av_back);
+			printf("%4d,%3d", major(bp->b_dev), minor(bp->b_dev));
+			printf("%8ld ", bp->b_blkno);
+			printf("\n");
+		}
+	}
+}
+
+pbufbp(abuf, abufe, bp)
+struct buf *abuf, *abufe;
+struct buf *bp;
+{
+	u_int ind;
+	ind = ((u_int)bp - (u_int)abuf) / (u_int)sizeof(*bp);
+	if (bp >= abuf && bp < abufe) {
+		printf("  ->%3d ", ind);
+	} else {
+		printf("%7.1o ", bp);
+	}
+}
+

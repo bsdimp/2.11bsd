@@ -7,7 +7,16 @@
  */
 
 /*
- * RK05 device drive
+ * RK05 device driver
+ *
+ * Date: December 28, 2008
+ *   fix UCB_METER: add dk_xfer[rk_dkn]++, which was forgotten. wfjm
+ *
+ * Date: December 26, 2008
+ *   add rkroot() to support root attach and rk05 as boot device. wfjm
+ *
+ * Notes:
+ *  - all rk drives appear under 'rk0' in UCB_METER stats even when NRK > 1.
  */
 
 #include "rk.h"
@@ -146,6 +155,7 @@ rkstart()
 	if (rk_dkn >= 0) {
 		dk_busy |= 1<<rk_dkn;
 		dk_seek[rk_dkn]++;
+		dk_xfer[rk_dkn]++;
 		dk_wds[rk_dkn] += bp->b_bcount>>6;
 	}
 #endif

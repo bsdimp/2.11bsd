@@ -181,7 +181,6 @@ char	**argv;
 			if (*ap)
 				tptr = ap;
 			else if ((tptr = ttyname(0)) != 0) {
-				tptr = strcpy(mytty, tptr);
 				if (strncmp(tptr, "/dev/", 5) == 0)
 					tptr += 5;
 			}

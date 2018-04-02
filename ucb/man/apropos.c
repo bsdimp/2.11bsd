@@ -79,7 +79,7 @@ main(argc, argv)
 		manpath = DEF_PATH;
 
 	/*NOSTRICT*/
-	if (!(found = (int *)malloc((u_int)argc))) {
+	if (!(found = (int *)malloc((u_int)(argc * sizeof(int))))) {
 		fprintf(stderr, "%s: out of space.\n", myname);
 		exit(1);
 	}

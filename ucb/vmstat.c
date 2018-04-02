@@ -27,6 +27,8 @@ static char sccsid[] = "@(#)vmstat.c	5.4.2 (2.11BSD GTE) 1997/3/28";
 #ifdef pdp11
 #include <machine/machparam.h>
 #include <sys/text.h>
+#define UCB_METER
+#include <sys/uba.h>
 #endif
 
 struct nlist nl[] = {
@@ -79,6 +81,8 @@ struct nlist nl[] = {
 	{ "_dk_unit" },
 #define X_FREEMEM	23
 	{ "_freemem" },
+#define X_UBMETER	24
+	{ "_ub_meter" },
 #else
 #define X_MBDINIT	21
 	{ "_mbdinit" },
@@ -206,7 +210,7 @@ main(argc, argv)
 
 		default:
 			fprintf(stderr,
-			    "usage: vmstat [ -fsi ] [ interval ] [ count]\n");
+			    "usage: vmstat [ -fsip ] [ drives ] [ interval ] [ count]\n");
 			exit(1);
 		}
 	}
@@ -387,12 +391,12 @@ loop:
 		printf("%4D%3D  ", rate.v_swpin / nintv, rate.v_swpout / nintv);
 	else {
 		printf("%4D",
-		    (cxstats.alloc_inuse - pxstats.alloc_inuse) / iter);
+		    (cxstats.alloc_inuse - pxstats.alloc_inuse) / nintv);
 		printf("%3D",
-		    (cxstats.alloc_cachehit - pxstats.alloc_cachehit) / iter);
+		    (cxstats.alloc_cachehit - pxstats.alloc_cachehit) / nintv);
 		printf("%4D%4D", rate.v_pgin / nintv, rate.v_pgout / nintv);
-		printf("%4D", (cxstats.free - pxstats.free) / iter);
-		printf("%4D", (cxstats.free_cache - pxstats.free_cache) / iter);
+		printf("%4D", (cxstats.free - pxstats.free) / nintv);
+		printf("%4D", (cxstats.free_cache - pxstats.free_cache) / nintv);
 		printf("%4D", rate.v_ovly / nintv);
 	}
 #else
@@ -442,7 +446,7 @@ printhdr()
 
 #ifdef pdp11
 	if (flag29)
-	    printf(" procs       memory      swap      ");
+	    printf(" procs       memory      swap   ");
 	else
 	    printf(" procs     memory              page           ");
 #else
@@ -453,17 +457,17 @@ printhdr()
 		i = 0;
 	for (j = 0; j < i; j++)
 		putchar(' ');
-	printf("faults");
+	printf("disks ");
 	i = ndrives * 3 - 6 - i;
 	for (j = 0; j < i; j++)
 		putchar(' ');
 #ifdef pdp11
 	if (flag29) {
-		printf("              cpu\n");
+		printf("         system             cpu\n");
 		printf(" r b w   avm  tx   fre   i  o   ");
 	}
 	else {
-		printf("               cpu\n");
+		printf("   system      cpu\n");
 		printf(" r b w   avm   fre  ti tc  pi  po  fr  fc  ov ");
 	}
 #else
@@ -506,6 +510,9 @@ dosum()
 	struct nchstats nchstats;
 	long nchtotal;
 	struct xstats  xstats;
+#ifdef pdp11
+	struct ubmeter	ub_meter;
+#endif
 
 	lseek(mf, (long)nl[X_SUM].n_value, L_SET);
 	read(mf, &sum, sizeof sum);
@@ -538,6 +545,16 @@ dosum()
 	printf("%9D revolutions of the clock hand\n", sum.v_rev);
 	printf("%9D pages freed by the clock daemon\n", sum.v_dfree / CLSIZE);
 #endif
+#ifdef pdp11
+	if (nl[X_UBMETER].n_type) {
+		lseek(mf, (long)nl[X_UBMETER].n_value, L_SET);
+		read(mf, &ub_meter, sizeof ub_meter);
+		printf("%9D ubmap calls to mapalloc\n", ub_meter.ub_calls);
+		printf("%9D ubmap buffer remappings\n",  ub_meter.ub_remaps);
+		printf("%9D ubmap allocation failures\n", ub_meter.ub_fails);
+		printf("%9D ubmap pages allocated\n", ub_meter.ub_pages);
+	}
+#endif
 	printf("%9D cpu context switches\n", sum.v_swtch);
 	printf("%9D device interrupts\n", sum.v_intr);
 	printf("%9D software interrupts\n", sum.v_soft);
@@ -547,6 +564,7 @@ dosum()
 	printf("%9D traps\n", sum.v_trap);
 #ifdef pdp11
 	printf("%9D overlay emts\n", sum.v_ovly);
+	printf("%9D floating point simulator faults\n", sum.v_fpsim);
 #endif
 	printf("%9D system calls\n", sum.v_syscall);
 #define	nz(x)	((x) ? (x) : 1)
