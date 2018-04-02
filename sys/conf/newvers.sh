@@ -8,10 +8,10 @@
 #
 if [ ! -r version ]; then echo 0 > version; fi
 touch version
-echo `cat version` ${USER-root} `pwd` `date` `hostname` | \
+echo `cat version` ${USER-root} `pwd` `hostname` `date` | \
 awk ' {
-	version = $1 + 1; user = $2; host = $10; dir = $3; \
-	date = $4 " " $5 " " $6 " " $7 " " $8 " " $9;
+	version = $1 + 1; user = $2; host = $4; dir = $3; \
+	date = $5 " " $6 " " $7 " " $8 " " $9 " " $10 " " $11;
 }\
 END {
 	printf "char version[] = \"2.11 BSD UNIX #%d: %s\\n", \

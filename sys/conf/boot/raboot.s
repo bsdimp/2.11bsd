@@ -1,5 +1,9 @@
 /*
  *	SCCS id	@(#)raboot.s	2.0 (2.11BSD)	4/13/91
+ *
+ * Code corrected as per the other primitive mscp drivers
+ * to handles other mscp controllers than DECs.
+ * /bqt - 20090817
  */
 #include "localopts.h"
 
@@ -59,7 +63,7 @@ hardboot:
 
 MSCPSIZE =	64.	/ One MSCP command packet is 64bytes long (need 2)
 
-RASEMAP	=	140000	/ RA controller owner semaphore
+RASEMAP	=	100000	/ RA controller owner semaphore
 
 RAERR =		100000	/ error bit 
 RASTEP1 =	04000	/ step1 has started
@@ -153,18 +157,20 @@ racmd:
 	mov	$RASEMAP,*$ra+RARSPH	/ set mscp semaphores
 	mov	$RASEMAP,*$ra+RACMDH
 	mov	*_bootcsr,r0		/ tap controllers shoulder
-	mov	$ra+RACMDI,r0
+	mov	$ra+RACMDH,r0
 1:
 	tst	(r0)
-	beq	1b			/ Wait till command read
-	clr	(r0)+			/ Tell controller we saw it, ok.
+	bmi	1b			/ Wait till command read
+	mov	$ra+RARSPH,r0
 2:
 	tst	(r0)
-	beq	2b			/ Wait till response written
+	bmi	2b			/ Wait till response written
+	mov	$ra+RACMDI,r0
+	clr	(r0)+			/ Tell controller we saw it, ok.
 	clr	(r0)			/ Tell controller we got it
 	rts	pc
 
-icons:	RAERR
+icons:	RAERR + 033
 	ra+RARING
 	0
 	RAGO

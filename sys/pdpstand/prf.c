@@ -9,6 +9,7 @@
 #include "../machine/cons.h"
 
 #define	KLADDR	((struct dldevice *)0177560)
+#define LKS ((int *)0177546)
 
 #define	CTRL(x)	('x' & 037)
 
@@ -116,6 +117,30 @@ getchar()
 	KLADDR->dlrcsr = DL_RE;
 	while ((KLADDR->dlrcsr & DL_RDONE) == 0)
 		continue;
+	c = KLADDR->dlrbuf & 0177;
+	if (c=='\r')
+		c = '\n';
+	return(c);
+}
+
+getchar2(t)
+	int t;
+{
+	register c;
+	int clks, olks;
+
+	KLADDR->dlrcsr = DL_RE;
+	*LKS = 0;
+	clks = 0x80;
+	while ((KLADDR->dlrcsr & DL_RDONE) == 0) {
+		olks = clks;
+		clks = *LKS;
+		if (~olks & clks & 0x80) {
+			*LKS = 0;
+			if ((--t) == 0) return (-1);
+		}
+		continue;
+	}
 	c = KLADDR->dlrbuf & 0177;
 	if (c=='\r')
 		c = '\n';

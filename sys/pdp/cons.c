@@ -164,7 +164,7 @@ cnstart(tp)
 	if (tp->t_flags & (RAW|LITOUT))
 		addr->dlxbuf = c&0xff;
 	else
-		addr->dlxbuf = c | (partab[c] & 0200);
+		addr->dlxbuf = c&0xff; /* | (partab[c] & 0200); /bqt */
 	tp->t_state |= TS_BUSY;
 out:
 	splx(s);

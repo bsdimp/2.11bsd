@@ -8,6 +8,13 @@
  * may not be used to endorse or promote products derived from this
  * software without specific prior written permission. This software
  * is provided ``as is'' without express or implied warranty.
+ *
+ * 2010-04-01	Johnny Billquist
+ *
+ * Changed code so that /etc/hosts are consulted even if named is
+ * used. This means that if name resolution fails, it will fall back
+ * to using /etc/hosts. Previously it just failed in this case. (But it
+ * did consult /etc/hosts if no named.conf existed.)
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
@@ -227,10 +234,14 @@ gethostbyname(name)
 		if (_res.options & RES_DEBUG)
 			printf("res_search failed\n");
 #endif
+#ifdef BQT
 		if (errno == ECONNREFUSED)
+#endif
 			return (_gethtbyname(name));
+#ifdef BQT
 		else
 			return ((struct hostent *) NULL);
+#endif
 	}
 	return (getanswer(&buf, n, 0));
 }
@@ -259,11 +270,16 @@ gethostbyaddr(addr, len, type)
 		if (_res.options & RES_DEBUG)
 			printf("res_query failed\n");
 #endif
+#ifdef BQT
 		if (errno == ECONNREFUSED)
+#endif
 			hp = _gethtbyaddr(addr, len, type);
-		return ((struct hostent *) NULL);
-	}
-	hp = getanswer(&buf, n, 1);
+#ifdef BQT
+		else
+			return ((struct hostent *) NULL);
+#endif
+	} else
+		hp = getanswer(&buf, n, 1);
 	if (hp == NULL)
 		return ((struct hostent *) NULL);
 	hp->h_addrtype = type;
