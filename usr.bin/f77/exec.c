@@ -227,11 +227,11 @@ if(p)
 		}
 	else if( ISINT(p->vtype) )
 		{
-		q = convic(p->const.ci);
+		q = convic(p->xconst.ci);
 		n = strlen(q);
 		if(n > 0)
 			{
-			p->const.ccp = copyn(n, q);
+			p->xconst.ccp = copyn(n, q);
 			p->vtype = TYCHAR;
 			p->vleng = ICON(n);
 			}

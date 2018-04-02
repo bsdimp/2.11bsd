@@ -304,13 +304,13 @@ impldcl( np = mkname(VL, nounder(XL, ep->entryname->extname) ) );
 type = np->vtype;
 if(proctype == TYUNKNOWN)
 	if( (proctype = type) == TYCHAR)
-		procleng = (np->vleng ? np->vleng->const.ci : (ftnint) 0);
+		procleng = (np->vleng ? np->vleng->xconst.ci : (ftnint) 0);
 
 if(proctype == TYCHAR)
 	{
 	if(type != TYCHAR)
 		error("noncharacter entry of character function",0,0,ERR);
-	else if( (np->vleng ? np->vleng->const.ci : (ftnint) 0) != procleng)
+	else if( (np->vleng ? np->vleng->xconst.ci : (ftnint) 0) != procleng)
 		error("mismatched character entry lengths",0,0,ERR);
 	}
 else if(type == TYCHAR)
@@ -345,7 +345,7 @@ else if(type != TYSUBR)
 	if(nentry == 1)
 		retslot = autovar(1, TYDREAL, NULL);
 	np->vstg = STGAUTO;
-	np->voffset = retslot->memoffset->const.ci;
+	np->voffset = retslot->memoffset->xconst.ci;
 	}
 
 for(p = ep->arglist ; p ; p = p->nextp)
@@ -459,11 +459,11 @@ if(leng <= 0)
 	return(-1);
 if(q->vdim)
 	if( ISICON(q->vdim->nelt) )
-		leng *= q->vdim->nelt->const.ci;
+		leng *= q->vdim->nelt->xconst.ci;
 	else	return(-1);
 if(q->vleng)
 	if( ISICON(q->vleng) )
-		leng *= q->vleng->const.ci;
+		leng *= q->vleng->xconst.ci;
 	else 	return(-1);
 return(leng);
 }
@@ -495,11 +495,11 @@ for(p = extsymtab ; p<nextext ; ++p)
 			v->voffset = p->extleng;
 			v->vardesc.varno = p - extsymtab;
 			if(type == TYCHAR)
-				size = v->vleng->const.ci;
+				size = v->vleng->xconst.ci;
 			else	size = typesize[type];
 			if(t = v->vdim)
 				if( (neltp = t->nelt) && ISCONST(neltp) )
-					size *= neltp->const.ci;
+					size *= neltp->xconst.ci;
 				else
 					error("adjustable array in common", v, 0, DCLERR);
 			p->extleng += size;
@@ -555,7 +555,7 @@ register struct addrblock *q;
 
 if(t == TYCHAR)
 	if( ISICON(lengp) )
-		leng = lengp->const.ci;
+		leng = lengp->xconst.ci;
 	else	{
 		error("automatic variable of nonconstant length",0,0,FATAL);
 		}
@@ -597,7 +597,7 @@ if(type==TYUNKNOWN || type==TYERROR)
 
 if(type==TYCHAR)
 	if( ISICON(lengp) )
-		leng = lengp->const.ci;
+		leng = lengp->xconst.ci;
 	else	{
 		error("adjustable length",0,0,ERR);
 		return( errnode() );
@@ -606,7 +606,7 @@ for(oldp = &templist ; p = oldp->nextp ; oldp = p)
 	{
 	q = p->datap;
 	if(q->vtype==type && q->ntempelt==nelt &&
-	    (type!=TYCHAR || q->vleng->const.ci==leng) )
+	    (type!=TYCHAR || q->vleng->xconst.ci==leng) )
 		{
 		oldp->nextp = p->nextp;
 		free(p);
@@ -695,7 +695,7 @@ else if(v->vtype == TYUNKNOWN)
 	if( (v->vtype = lengtype(type, length))==TYCHAR && length!=0)
 		v->vleng = ICON(length);
 	}
-else if(v->vtype!=type || (type==TYCHAR && v->vleng->const.ci!=length) )
+else if(v->vtype!=type || (type==TYCHAR && v->vleng->xconst.ci!=length) )
 	error("incompatible or duplicate type declaration", v, 0, DCLERR);
 /*! added "or duplicate" to error message PLWard 10/80 */
 }

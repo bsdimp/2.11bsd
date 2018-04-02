@@ -1,4 +1,4 @@
-/*	@(#)const.c	2.3	SCCS id keyword	*/
+/*	@(#)const.c	2.3.1 2001/11/19 */
 /* Copyright (c) 1979 Regents of the University of California */
 #
 /*
@@ -29,7 +29,7 @@ constbeg()
 }
 #endif
 
-const(cline, cid, cdecl)
+xconst(cline, cid, cdecl)
 	int cline;
 	register char *cid;
 	register int *cdecl;

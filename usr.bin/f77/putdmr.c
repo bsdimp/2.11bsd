@@ -210,12 +210,12 @@ switch(p->tag)
 				if(type == TYSHORT)
 					{
 					p2op2(P2ICON, P2SHORT);
-					p2i( (short)(p->const.ci) );
+					p2i( (short)(p->xconst.ci) );
 					}
 				else
 					{
 					p2op2(P2LCON, P2LONG);
-					p2li(p->const.ci);
+					p2li(p->xconst.ci);
 					}
 				free(p);
 				break;
@@ -224,7 +224,7 @@ switch(p->tag)
 				p2op(P2NAME);
 				p2i(P2STATIC);
 				p2i(P2INT);
-				p2i( (int) p->const.ci);
+				p2i( (int) p->xconst.ci);
 				p2op2(P2ADDR, P2PTR);
 				free(p);
 				break;
@@ -494,7 +494,7 @@ ftnint k;
 int type;
 int ncomma;
 
-if(!ISICON(p->rightp) || (k = p->rightp->const.ci)<2)
+if(!ISICON(p->rightp) || (k = p->rightp->xconst.ci)<2)
 	error("putpower: bad call",0,0,FATAL);
 base = p->leftp;
 type = base->vtype;
@@ -798,7 +798,7 @@ switch(p->tag)
 				break;
 
 			case OPCONV:
-				if(!ISICON(p->vleng) || p->vleng->const.ci!=1
+				if(!ISICON(p->vleng) || p->vleng->xconst.ci!=1
 				   || ! INT(p->leftp->vtype) )
 					error("putch1: bad character conversion",0,0,FATAL);
 				t = mktemp(TYCHAR, ICON(1) );
@@ -963,7 +963,7 @@ if(p->vclass == CLPROC)
 	}
 else
 	funct = 0;
-if(p->memoffset && (!ISICON(p->memoffset) || p->memoffset->const.ci!=0) )
+if(p->memoffset && (!ISICON(p->memoffset) || p->memoffset->xconst.ci!=0) )
 	offp = cpexpr(p->memoffset);
 else
 	offp = NULL;

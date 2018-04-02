@@ -349,7 +349,7 @@ if(argvec == NULL)
 	addreg(argloc = 4);
 else
 	{
-	addreg( argloc = argvec->memoffset->const.ci );
+	addreg( argloc = argvec->memoffset->xconst.ci );
 	if(proctype == TYCHAR)
 		{
 		mvarg(TYADDR, 0, chslot);

@@ -47,7 +47,7 @@ for(i = 0 ; i < nequiv ; ++i)
 			}
 		else	offp = ICON(0);
 		if(ISICON(offp))
-			offset = q->eqvoffset = offp->const.ci;
+			offset = q->eqvoffset = offp->xconst.ci;
 		else	{
 			error("nonconstant subscript in equivalence ", np, 0, DCLERR);
 			np = NULL;

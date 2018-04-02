@@ -53,7 +53,7 @@ lengspec:
 			$$ = 0;
 			error("length must be an integer constant", 0, 0, DCLERR);
 			}
-		  else $$ = $3->const.ci;
+		  else $$ = $3->xconst.ci;
 		}
 	| SSTAR intonlyon SLPAR SSTAR SRPAR intonlyoff
 		{ $$ = 0; }

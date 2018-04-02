@@ -252,13 +252,13 @@ skiplab = iosreturn = NO;
 
 if(p = V(IOSEND))
 	if(ISICON(p))
-		ioendlab = mklabel(p->const.ci)->labelno;
+		ioendlab = mklabel(p->xconst.ci)->labelno;
 	else
 		error("bad end= clause",0,0,ERR);
 
 if(p = V(IOSERR))
 	if(ISICON(p))
-		ioerrlab = mklabel(p->const.ci)->labelno;
+		ioerrlab = mklabel(p->xconst.ci)->labelno;
 	else
 		error("bad err= clause",0,0,ERR);
 
@@ -644,7 +644,7 @@ if(p = V(IOSFMT))
 		ioset(TYADDR, fmtoff, addrof(cpexpr(p)) );
 	else if( ISICON(p) )
 		{
-		if( (k = fmtstmt( mklabel(p->const.ci) )) > 0 )
+		if( (k = fmtstmt( mklabel(p->xconst.ci) )) > 0 )
 			ioset(TYADDR, fmtoff, mkaddcon(k) );
 		else
 			ioformatted = UNFORMATTED;

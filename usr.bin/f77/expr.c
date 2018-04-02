@@ -21,7 +21,7 @@ register int l;
 register struct constblock * p;
 
 p = mkconst(TYLOGICAL);
-p->const.ci = l;
+p->xconst.ci = l;
 return(p);
 }
 
@@ -33,7 +33,7 @@ ftnint l;
 register struct constblock *p;
 
 p = mkconst(TYLONG);
-p->const.ci = l;
+p->xconst.ci = l;
 #ifdef MAXSHORT
 	if(l >= -MAXSHORT   &&   l <= MAXSHORT)
 		p->vtype = TYSHORT;
@@ -49,7 +49,7 @@ register int l;
 register struct constblock *p;
 
 p = mkconst(TYADDR);
-p->const.ci = l;
+p->xconst.ci = l;
 return(p);
 }
 
@@ -62,7 +62,7 @@ double d;
 register struct constblock *p;
 
 p = mkconst(t);
-p->const.cd[0] = d;
+p->xconst.cd[0] = d;
 return(p);
 }
 
@@ -75,10 +75,10 @@ char *s;
 register struct constblock *p;
 
 p = mkconst(TYUNKNOWN);
-p->const.ci = 0;
+p->xconst.ci = 0;
 while(--leng >= 0)
 	if(*s != ' ')
-		p->const.ci = (p->const.ci << shift) | hextoi(*s++);
+		p->xconst.ci = (p->xconst.ci << shift) | hextoi(*s++);
 return(p);
 }
 
@@ -95,7 +95,7 @@ register char *s;
 
 p = mkconst(TYCHAR);
 p->vleng = ICON(l);
-p->const.ccp = s = (char *) ckalloc(l);
+p->xconst.ccp = s = (char *) ckalloc(l);
 while(--l >= 0)
 	*s++ = *v++;
 return(p);
@@ -115,11 +115,11 @@ if( ISCONST(realp) && ISNUMERIC(rtype) && ISCONST(imagp) && ISNUMERIC(itype) )
 	{
 	p = mkconst( (rtype==TYDREAL||itype==TYDREAL) ? TYDCOMPLEX : TYCOMPLEX );
 	if( ISINT(rtype) )
-		p->const.cd[0] = realp->const.ci;
-	else	p->const.cd[0] = realp->const.cd[0];
+		p->xconst.cd[0] = realp->xconst.ci;
+	else	p->xconst.cd[0] = realp->xconst.cd[0];
 	if( ISINT(itype) )
-		p->const.cd[1] = imagp->const.ci;
-	else	p->const.cd[1] = imagp->const.cd[0];
+		p->xconst.cd[1] = imagp->xconst.ci;
+	else	p->xconst.cd[1] = imagp->xconst.cd[0];
 	}
 else
 	{
@@ -163,7 +163,7 @@ if(t == pt)
 else if( ISCONST(p) && pt!=TYADDR)
 	{
 	q = mkconst(t);
-	consconv(t, &(q->const), p->vtype, &(p->const));
+	consconv(t, &(q->xconst), p->vtype, &(p->xconst));
 	frexpr(p);
 	}
 #if TARGET == PDP11
@@ -237,7 +237,7 @@ switch(tag)
 	case TCONST:
 		if(e->vtype == TYCHAR)
 			{
-			e->const.ccp = copyn(1+strlen(e->const.ccp), e->const.ccp);
+			e->xconst.ccp = copyn(1+strlen(e->xconst.ccp), e->xconst.ccp);
 			e->vleng = cpexpr(e->vleng);
 			}
 	case TERROR:
@@ -289,7 +289,7 @@ switch(p->tag)
 	case TCONST:
 		if( ISCHAR(p) )
 			{
-			free(p->const.ccp);
+			free(p->xconst.ccp);
 			frexpr(p->vleng);
 			}
 		break;
@@ -1075,10 +1075,10 @@ checkvar = NULL;
 checkcond = NULL;
 if( ISICON(p) )
 	{
-	if(p->const.ci < 0)
+	if(p->xconst.ci < 0)
 		goto badsub;
 	if( ISICON(dimp->nelt) )
-		if(p->const.ci < dimp->nelt->const.ci)
+		if(p->xconst.ci < dimp->nelt->xconst.ci)
 			return(p);
 		else
 			goto badsub;
@@ -1250,11 +1250,11 @@ switch(v->vstg)
 		nelt = 1;
 		if(t = v->vdim)
 			if( (neltp = t->nelt) && ISCONST(neltp) )
-				nelt = neltp->const.ci;
+				nelt = neltp->xconst.ci;
 			else
 				error("adjustable automatic array", v, 0, DCLERR);
 		p = autovar(nelt, v->vtype, v->vleng);
-		v->voffset = p->memoffset->const.ci;
+		v->voffset = p->memoffset->xconst.ci;
 		frexpr(p);
 		break;
 
@@ -1303,7 +1303,7 @@ if( isupper(c) )
 return(c - 'a');
 }
 
-#define ICONEQ(z, c)  (ISICON(z) && z->const.ci==c)
+#define ICONEQ(z, c)  (ISICON(z) && z->xconst.ci==c)
 #define COMMUTE	{ e = lp;  lp = rp;  rp = e; }
 
 
@@ -1340,7 +1340,7 @@ switch(opcode)
 
 		if( ISICON(rp) )
 			{
-			if(rp->const.ci == 0)
+			if(rp->xconst.ci == 0)
 				goto retright;
 			goto mulop;
 			}
@@ -1361,10 +1361,10 @@ switch(opcode)
 	mulop:
 		if( ISICON(rp) )
 			{
-			if(rp->const.ci == 1)
+			if(rp->xconst.ci == 1)
 				goto retleft;
 
-			if(rp->const.ci == -1)
+			if(rp->xconst.ci == -1)
 				{
 				frexpr(rp);
 				return( mkexpr(OPNEG, lp, 0) );
@@ -1375,7 +1375,7 @@ switch(opcode)
 			{
 			if(opcode == OPSTAR)
 				e = mkexpr(OPSTAR, lp->rightp, rp);
-			else  if(ISICON(rp) && lp->rightp->const.ci % rp->const.ci == 0)
+			else  if(ISICON(rp) && lp->rightp->xconst.ci % rp->xconst.ci == 0)
 				e = mkexpr(OPSLASH, lp->rightp, rp);
 			else	break;
 
@@ -1407,7 +1407,7 @@ switch(opcode)
 	addop:
 		if( ISICON(rp) )
 			{
-			if(rp->const.ci == 0)
+			if(rp->xconst.ci == 0)
 				goto retleft;
 			if( ISPLUSOP(lp) && ISICON(lp->rightp) )
 				{
@@ -1458,7 +1458,7 @@ switch(opcode)
 
 		if( ISCONST(rp) )
 			{
-			if(rp->const.ci == 0)
+			if(rp->xconst.ci == 0)
 				if(opcode == OPOR)
 					goto retleft;
 				else
@@ -1675,11 +1675,11 @@ if(rp == 0)
 	switch(opcode)
 		{
 		case OPNOT:
-			lp->const.ci = ! lp->const.ci;
+			lp->xconst.ci = ! lp->xconst.ci;
 			return(lp);
 
 		case OPBITNOT:
-			lp->const.ci = ~ lp->const.ci;
+			lp->xconst.ci = ~ lp->xconst.ci;
 			return(lp);
 
 		case OPNEG:
@@ -1709,50 +1709,50 @@ switch(opcode)
 		return(e);
 
 	case OPAND:
-		p->const.ci = lp->const.ci && rp->const.ci;
+		p->xconst.ci = lp->xconst.ci && rp->xconst.ci;
 		break;
 
 	case OPOR:
-		p->const.ci = lp->const.ci || rp->const.ci;
+		p->xconst.ci = lp->xconst.ci || rp->xconst.ci;
 		break;
 
 	case OPEQV:
-		p->const.ci = lp->const.ci == rp->const.ci;
+		p->xconst.ci = lp->xconst.ci == rp->xconst.ci;
 		break;
 
 	case OPNEQV:
-		p->const.ci = lp->const.ci != rp->const.ci;
+		p->xconst.ci = lp->xconst.ci != rp->xconst.ci;
 		break;
 
 	case OPBITAND:
-		p->const.ci = lp->const.ci & rp->const.ci;
+		p->xconst.ci = lp->xconst.ci & rp->xconst.ci;
 		break;
 
 	case OPBITOR:
-		p->const.ci = lp->const.ci | rp->const.ci;
+		p->xconst.ci = lp->xconst.ci | rp->xconst.ci;
 		break;
 
 	case OPBITXOR:
-		p->const.ci = lp->const.ci ^ rp->const.ci;
+		p->xconst.ci = lp->xconst.ci ^ rp->xconst.ci;
 		break;
 
 	case OPLSHIFT:
-		p->const.ci = lp->const.ci << rp->const.ci;
+		p->xconst.ci = lp->xconst.ci << rp->xconst.ci;
 		break;
 
 	case OPRSHIFT:
-		p->const.ci = lp->const.ci >> rp->const.ci;
+		p->xconst.ci = lp->xconst.ci >> rp->xconst.ci;
 		break;
 
 	case OPCONCAT:
-		ll = lp->vleng->const.ci;
-		lr = rp->vleng->const.ci;
-		p->const.ccp = q = (char *) ckalloc(ll+lr);
+		ll = lp->vleng->xconst.ci;
+		lr = rp->vleng->xconst.ci;
+		p->xconst.ccp = q = (char *) ckalloc(ll+lr);
 		p->vleng = ICON(ll+lr);
-		s = lp->const.ccp;
+		s = lp->xconst.ccp;
 		for(i = 0 ; i < ll ; ++i)
 			*q++ = *s++;
-		s = rp->const.ccp;
+		s = rp->xconst.ccp;
 		for(i = 0; i < lr; ++i)
 			*q++ = *s++;
 		break;
@@ -1761,24 +1761,24 @@ switch(opcode)
 	case OPPOWER:
 		if( ! ISINT(rtype) )
 			return(e);
-		conspower(&(p->const), lp, rp->const.ci);
+		conspower(&(p->xconst), lp, rp->xconst.ci);
 		break;
 
 
 	default:
 		if(ltype == TYCHAR)
 			{
-			lcon.ci = cmpstr(lp->const.ccp, rp->const.ccp,
-					lp->vleng->const.ci, rp->vleng->const.ci);
+			lcon.ci = cmpstr(lp->xconst.ccp, rp->xconst.ccp,
+					lp->vleng->xconst.ci, rp->vleng->xconst.ci);
 			rcon.ci = 0;
 			mtype = tyint;
 			}
 		else	{
 			mtype = maxtype(ltype, rtype);
-			consconv(mtype, &lcon, ltype, &(lp->const) );
-			consconv(mtype, &rcon, rtype, &(rp->const) );
+			consconv(mtype, &lcon, ltype, &(lp->xconst) );
+			consconv(mtype, &rcon, rtype, &(rp->xconst) );
 			}
-		consbinop(opcode, mtype, &(p->const), &lcon, &rcon);
+		consbinop(opcode, mtype, &(p->xconst), &lcon, &rcon);
 		break;
 	}
 
@@ -1848,16 +1848,16 @@ switch(p->vtype)
 	{
 	case TYSHORT:
 	case TYLONG:
-		p->const.ci = - p->const.ci;
+		p->xconst.ci = - p->xconst.ci;
 		break;
 
 	case TYCOMPLEX:
 	case TYDCOMPLEX:
-		p->const.cd[1] = - p->const.cd[1];
+		p->xconst.cd[1] = - p->xconst.cd[1];
 		/* fall through and do the real parts */
 	case TYREAL:
 	case TYDREAL:
-		p->const.cd[0] = - p->const.cd[0];
+		p->xconst.cd[0] = - p->xconst.cd[0];
 		break;
 	default:
 		error("consnegop: impossible type %d", p->vtype,0,FATAL1);
@@ -1901,10 +1901,10 @@ if(n < 0)
 		return;
 		}
 	n = - n;
-	consbinop(OPSLASH, type, &x, powp, &(ap->const));
+	consbinop(OPSLASH, type, &x, powp, &(ap->xconst));
 	}
 else
-	consbinop(OPSTAR, type, &x, powp, &(ap->const));
+	consbinop(OPSTAR, type, &x, powp, &(ap->xconst));
 
 for( ; ; )
 	{
@@ -2079,19 +2079,19 @@ switch(p->vtype)
 	{
 	case TYSHORT:
 	case TYLONG:
-		if(p->const.ci > 0) return(1);
-		if(p->const.ci < 0) return(-1);
+		if(p->xconst.ci > 0) return(1);
+		if(p->xconst.ci < 0) return(-1);
 		return(0);
 
 	case TYREAL:
 	case TYDREAL:
-		if(p->const.cd[0] > 0) return(1);
-		if(p->const.cd[0] < 0) return(-1);
+		if(p->xconst.cd[0] > 0) return(1);
+		if(p->xconst.cd[0] < 0) return(-1);
 		return(0);
 
 	case TYCOMPLEX:
 	case TYDCOMPLEX:
-		return(p->const.cd[0]!=0 || p->const.cd[1]!=0);
+		return(p->xconst.cd[0]!=0 || p->xconst.cd[1]!=0);
 
 	default:
 		error("conssgn(type %d)", p->vtype,0,FATAL1);
@@ -2115,7 +2115,7 @@ rtype = rp->vtype;
 
 if(ISICON(rp))
 	{
-	if(rp->const.ci == 0)
+	if(rp->xconst.ci == 0)
 		{
 		frexpr(p);
 		if( ISINT(ltype) )
@@ -2123,7 +2123,7 @@ if(ISICON(rp))
 		else
 			return( putconst( mkconv(ltype, ICON(1))) );
 		}
-	if(rp->const.ci < 0)
+	if(rp->xconst.ci < 0)
 		{
 		if( ISINT(ltype) )
 			{
@@ -2131,10 +2131,10 @@ if(ISICON(rp))
 			error("integer**negative",0,0,ERR);
 			return( errnode() );
 			}
-		rp->const.ci = - rp->const.ci;
+		rp->xconst.ci = - rp->xconst.ci;
 		p->leftp = lp = fixexpr(mkexpr(OPSLASH, ICON(1), lp));
 		}
-	if(rp->const.ci == 1)
+	if(rp->xconst.ci == 1)
 		{
 		frexpr(rp);
 		free(p);

@@ -203,10 +203,10 @@ label_decl:
 
 const_decl:
 	YCONST YID '=' const ';'
-		= constbeg($1, line2of($2)), const(lineof($3), $2, $4);
+		= constbeg($1, line2of($2)), xconst(lineof($3), $2, $4);
 		|
 	const_decl YID '=' const ';'
-		= const(lineof($3), $2, $4);
+		= xconst(lineof($3), $2, $4);
 		|
 	YCONST error
 		= {

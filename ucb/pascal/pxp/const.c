@@ -31,7 +31,7 @@ constbeg(l, cline)
 	setline(cline);
 }
 
-const(cline, cid, cdecl)
+xconst(cline, cid, cdecl)
 	int cline;
 	char *cid;
 	int *cdecl;

@@ -268,7 +268,7 @@ struct constblock
 	unsigned tag:4;
 	unsigned vtype:4;
 	expptr vleng;
-	union constant const;
+	union constant xconst;
 	};
 
 

@@ -1,4 +1,4 @@
-static char *sccsid = "@(#)od.c	5.12 (Berkeley) 5/14/84";
+static char *sccsid = "@(#)od.c	5.13 (2.11BSD) 2001/11/19";
 /*
  * od -- octal, hex, decimal, character dump of data in a file.
  *
@@ -697,10 +697,10 @@ static char	_icv_buf[MAXINTLENGTH+1];
 static long	_mask = 0x7fffffff;
 
 char *
-icvt (value, radix, signed, ndigits)
+icvt (value, radix, xsigned, ndigits)
 long	value;
 int	radix;
-int	signed;
+int	xsigned;
 int	ndigits;
 {
 	register long	val = value;
@@ -720,7 +720,7 @@ int	ndigits;
 		goto done; /*return(b);*/
 	}
 
-	if (signed && (sign = (val < 0)))	/* signed conversion */
+	if (xsigned && (sign = (val < 0)))	/* signed conversion */
 	{
 		/*
 		 * It is necessary to do the first divide
@@ -776,7 +776,7 @@ done:
 		*--b = '-';
 
 	tmp1 = ndigits - (&_icv_buf[MAXINTLENGTH] - b);
-	tmp2 = signed? ' ':'0';
+	tmp2 = xsigned? ' ':'0';
 	while (tmp1 > 0)
 	{
 		*--b = tmp2;

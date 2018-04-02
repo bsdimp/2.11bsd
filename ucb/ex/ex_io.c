@@ -5,7 +5,7 @@
  */
 
 #if	!defined(lint) && defined(DOSCCS)
-static char *sccsid = "@(#)ex_io.c	7.11.1.1 (Berkeley) 8/12/86";
+static char *sccsid = "@(#)ex_io.c	7.11.1.2 (2.11BSD) 2001/11/19";
 #endif
 
 #include "ex.h"
@@ -856,17 +856,17 @@ iostats()
 # define rindex strrchr
 #endif
 
-checkmodeline(line)
-char *line;
+checkmodeline(xline)
+char *xline;
 {
 	char *beg, *end;
 	char cmdbuf[1024];
 	char *index(), *rindex();
 
-	beg = index(line, ':');
+	beg = index(xline, ':');
 	if (beg == NULL)
 		return;
-	if (&beg[-3] < line)
+	if (&beg[-3] < xline)
 		return;
 	if (!(  ( (beg[-3] == ' ' || beg[-3] == '\t')
 	        && beg[-2] == 'e'
